@@ -1,5 +1,5 @@
 {
-    "name": "pestphp/pest-plugin-template",
+    "name": "pestphp/pest-plugin-parallel",
     "description": "My awesome plugin",
     "keywords": [
         "php",
@@ -13,12 +13,13 @@
     "license": "MIT",
     "require": {
         "php": "^7.3 || ^8.0",
+        "brianium/paratest": "^6.3",
         "pestphp/pest": "^1.0",
         "pestphp/pest-plugin": "^1.0"
     },
     "autoload": {
         "psr-4": {
-            "Pest\\PluginName\\": "src/"
+            "Pest\\Parallel\\": "src/"
         },
         "files": [
             "src/Autoload.php"
@@ -28,6 +29,11 @@
         "pestphp/pest-dev-tools": "dev-master"
     },
     "extra": {
+        "pest": {
+            "plugins": [
+                "Pest\\Parallel\\Plugin"
+            ]
+        },
         "branch-alias": {
             "dev-master": "1.x-dev"
         }
