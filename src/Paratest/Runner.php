@@ -28,6 +28,11 @@ final class Runner implements RunnerInterface
 {
     private const CYCLE_SLEEP = 10000;
 
+    /**
+     * @var int
+     */
+    private $exitcode = -1;
+
     /** @var Options */
     private $options;
 
@@ -49,19 +54,6 @@ final class Runner implements RunnerInterface
      * @var ExecutableTest[]
      */
     private $pending = [];
-
-    /**
-     * @var LogInterpreter
-     */
-    private $results;
-
-    /**
-     * A tallied exit code that returns the highest exit
-     * code returned out of the entire collection of tests.
-     *
-     * @var int
-     */
-    private $exitcode = -1;
 
     /** @var OutputInterface */
     private $output;
@@ -88,7 +80,6 @@ final class Runner implements RunnerInterface
         $this->options     = $options;
         $this->output      = $output;
         $this->interpreter = new LogInterpreter();
-        $this->results     = $this->interpreter;
         $this->printer     = new ResultPrinter($this->interpreter, $output, $options);
         $this->timer       = new Timer();
 
@@ -118,12 +109,12 @@ final class Runner implements RunnerInterface
      */
     private function load(SuiteLoader $loader): void
     {
-        $this->beforeLoadChecks();
-
         $loader->load();
-        $this->pending = $loader->getSuites();
 
-        $this->loadPestSuite();
+        $this->pending = array_merge(
+            $loader->getSuites(),
+            $this->loadPestTests(),
+        );
 
         $this->sortPending();
 
@@ -176,10 +167,10 @@ final class Runner implements RunnerInterface
     private function writeRecap(): void
     {
         $types = [
-            TestResult::FAIL    => $this->results->getTotalFailures() + $this->results->getTotalErrors(),
-            TestResult::WARN    => $this->results->getTotalWarnings(),
-            TestResult::SKIPPED => $this->results->getTotalSkipped(),
-            TestResult::PASS    => $this->results->getTotalTests() - $this->results->getTotalFailures() - $this->results->getTotalErrors() - $this->results->getTotalWarnings() - $this->results->getTotalSkipped(),
+            TestResult::FAIL    => $this->interpreter->getTotalFailures() + $this->interpreter->getTotalErrors(),
+            TestResult::WARN    => $this->interpreter->getTotalWarnings(),
+            TestResult::SKIPPED => $this->interpreter->getTotalSkipped(),
+            TestResult::PASS    => $this->interpreter->getTotalTests() - $this->interpreter->getTotalFailures() - $this->interpreter->getTotalErrors() - $this->interpreter->getTotalWarnings() - $this->interpreter->getTotalSkipped(),
         ];
 
         $tests = [];
@@ -376,6 +367,7 @@ final class Runner implements RunnerInterface
         }
 
         $this->exitcode = max($this->exitcode, (int) $worker->stop());
+
         if ($this->options->stopOnFailure() && $this->exitcode > 0) {
             $this->pending = [];
         }
@@ -391,7 +383,7 @@ final class Runner implements RunnerInterface
         $executableTest = $worker->getExecutableTest();
 
         try {
-            $this->results->addReader(new Reader($executableTest->getTempFile()));
+            $this->interpreter->addReader(new Reader($executableTest->getTempFile()));
         } catch (EmptyLogFileException $emptyLogFileException) {
             throw $worker->getWorkerCrashedException($emptyLogFileException);
         }
@@ -405,11 +397,10 @@ final class Runner implements RunnerInterface
         return false;
     }
 
-    private function beforeLoadChecks(): void
-    {
-    }
-
-    private function loadPestSuite(): void
+    /**
+     * @return array<ExecutablePestTest>
+     */
+    private function loadPestTests(): array
     {
         $pestTestSuite = TestSuite::getInstance();
 
@@ -419,7 +410,7 @@ final class Runner implements RunnerInterface
 
         $occurrences = array_count_values($files);
 
-        $tests = array_values(array_map(function (int $occurrences, string $file): ExecutablePestTest {
+        return array_values(array_map(function (int $occurrences, string $file): ExecutablePestTest {
             return new ExecutablePestTest(
                 $file,
                 $occurrences,
@@ -428,7 +419,5 @@ final class Runner implements RunnerInterface
                 $this->options->tmpDir(),
             );
         }, $occurrences, array_keys($occurrences)));
-
-        $this->pending = array_merge($this->pending, $tests);
     }
 }

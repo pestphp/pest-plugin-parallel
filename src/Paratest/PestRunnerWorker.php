@@ -24,7 +24,9 @@ use Throwable;
  */
 final class PestRunnerWorker
 {
-    /** @var ExecutableTest */
+    /**
+     * @var ExecutableTest
+     */
     private $executableTest;
 
     /**
@@ -76,9 +78,9 @@ final class PestRunnerWorker
     /**
      * @param array<int, string> $args
      */
-    private function overridePrinter(array &$args)
+    private function overridePrinter(array &$args): void
     {
-        $arrayIndex        = array_search(NullPhpunitPrinter::class, $args);
+        $arrayIndex        = array_search(NullPhpunitPrinter::class, $args, true);
         $args[$arrayIndex] = Printer::class;
     }
 

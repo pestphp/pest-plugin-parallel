@@ -34,7 +34,7 @@ final class Plugin implements HandlesArguments
 
     private function markTestSuiteAsParallelIfRequired(): void
     {
-        if (Arr::get($_SERVER, 'PARATEST', false) !== false) {
+        if (Arr::get($_SERVER, 'PARATEST') !== null) {
             TestSuite::getInstance()->isInParallel = true;
         }
     }
@@ -65,13 +65,13 @@ final class Plugin implements HandlesArguments
     }
 
     /**
-     * @param array<string> $arguments
+     * @param array<int, string> $arguments
      */
-    private function setArgument(array &$arguments, string $key, string $value = null): void
+    private function setArgument(array &$arguments, string $key, string $value = ''): void
     {
         $arguments[] = $key;
 
-        if ($value !== null) {
+        if (strlen($value) > 0) {
             $arguments[] = $value;
         }
     }
