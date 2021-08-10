@@ -105,6 +105,10 @@ final class PestRunnerWorker
 
     private function handleOutput(string $output): void
     {
+        if (strlen($output) === 0) {
+            return;
+        }
+
         try {
             preg_match_all('/^\\n/m', $output, $matches, PREG_OFFSET_CAPTURE);
 
