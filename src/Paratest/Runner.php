@@ -178,8 +178,7 @@ final class Runner implements RunnerInterface
         $types = [
             TestResult::FAIL    => $this->results->getTotalFailures() + $this->results->getTotalErrors(),
             TestResult::WARN    => $this->results->getTotalWarnings(),
-            TestResult::SKIPPED => $this->results->getTotalSkipped() - count($this->results->getRisky()),
-            TestResult::RISKY   => count($this->results->getRisky()),
+            TestResult::SKIPPED => $this->results->getTotalSkipped(),
             TestResult::PASS    => $this->results->getTotalTests() - $this->results->getTotalFailures() - $this->results->getTotalErrors() - $this->results->getTotalWarnings() - $this->results->getTotalSkipped(),
         ];
 
