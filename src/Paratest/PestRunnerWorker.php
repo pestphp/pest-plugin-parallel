@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Pest\Parallel\Paratest;
 
+use NunoMaduro\Collision\Adapters\Phpunit\Printer;
+use ParaTest\Runners\PHPUnit\Worker\NullPhpunitPrinter;
 use function array_merge;
 use const DIRECTORY_SEPARATOR;
 use InvalidArgumentException;
@@ -62,11 +64,22 @@ final class PestRunnerWorker
             )
         );
 
+        $this->overridePrinter($args);
+
         $this->process = new Process($args, $options->cwd(), $options->fillEnvWithTokens($token));
 
         $cmd = $this->process->getCommandLine();
         $this->assertValidCommandLineLength($cmd);
         $this->executableTest->setLastCommand($cmd);
+    }
+
+    /**
+     * @param  array<int, string>  $args
+     */
+    private function overridePrinter(array &$args)
+    {
+        $arrayIndex = array_search(NullPhpunitPrinter::class, $args);
+        $args[$arrayIndex] = Printer::class;
     }
 
     public function getExecutableTest(): ExecutableTest
