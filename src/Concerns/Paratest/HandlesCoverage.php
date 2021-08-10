@@ -11,6 +11,9 @@ use ParaTest\Runners\PHPUnit\Options;
 use Pest\Support\Coverage;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * @internal
+ */
 trait HandlesCoverage
 {
     /**

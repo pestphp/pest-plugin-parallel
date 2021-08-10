@@ -6,24 +6,21 @@ namespace Pest\Parallel\Paratest;
 
 use Exception;
 use NunoMaduro\Collision\Adapters\Phpunit\TestResult;
-use ParaTest\Logging\JUnit\Reader;
-use ParaTest\Logging\JUnit\Writer;
-use ParaTest\Logging\LogInterpreter;
 use ParaTest\Runners\PHPUnit\EmptyLogFileException;
 use ParaTest\Runners\PHPUnit\ExecutableTest;
 use ParaTest\Runners\PHPUnit\Options;
-use ParaTest\Runners\PHPUnit\ResultPrinter;
 use ParaTest\Runners\PHPUnit\RunnerInterface;
-use ParaTest\Runners\PHPUnit\SuiteLoader;
-use Pest\Factories\TestCaseFactory;
 use Pest\Parallel\Concerns\Paratest\HandlesCoverage;
-use Pest\TestSuite;
+use Pest\Parallel\Concerns\Paratest\InterpretsResults;
+use Pest\Parallel\Concerns\Paratest\LoadsTests;
 use PHPUnit\TextUI\TestRunner;
 use SebastianBergmann\Timer\Timer;
 use Symfony\Component\Console\Output\OutputInterface;
 
 final class Runner implements RunnerInterface
 {
+    use LoadsTests;
+    use InterpretsResults;
     use HandlesCoverage;
 
     private const CYCLE_SLEEP = 10000;
@@ -33,11 +30,12 @@ final class Runner implements RunnerInterface
      */
     private $exitcode = -1;
 
-    /** @var Options */
+    /**
+     * The provided Paratest Options.
+     *
+     * @var Options
+     */
     private $options;
-
-    /** @var ResultPrinter */
-    private $printer;
 
     /**
      * A collection of ExecutableTest objects that have processes
@@ -48,18 +46,18 @@ final class Runner implements RunnerInterface
     private $running = [];
 
     /**
-     * A collection of pending ExecutableTest objects that have
-     * yet to run.
+     * A collection of pending ExecutableTest objects that have yet to run.
      *
      * @var ExecutableTest[]
      */
     private $pending = [];
 
-    /** @var OutputInterface */
+    /**
+     * The output used for displaying information to the user.
+     *
+     * @var OutputInterface
+     */
     private $output;
-
-    /** @var LogInterpreter */
-    private $interpreter;
 
     /**
      * A timer used to track the duration of the test suite.
@@ -72,44 +70,29 @@ final class Runner implements RunnerInterface
     {
         $this->options     = $options;
         $this->output      = $output;
-        $this->interpreter = new LogInterpreter();
-        $this->printer     = new ResultPrinter($this->interpreter, $output, $options);
         $this->timer       = new Timer();
 
+        $this->initInterpretsResults();
         $this->initCoverage($this->options);
     }
 
     final public function run(): void
     {
         $this->timer->start();
-
-        $this->load(new SuiteLoader($this->options, $this->output));
-
+        $this->load();
         $this->doRun();
-
         $this->complete();
     }
 
     /**
      * Builds the collection of pending ExecutableTest objects
-     * to run. If functional mode is enabled $this->pending will
-     * contain a collection of TestMethod objects instead of Suite
-     * objects.
+     * to run. This will be a mix of Pest tests and PhpUnit tests.
      */
-    private function load(SuiteLoader $loader): void
+    private function load(): void
     {
-        $loader->load();
-
-        $this->pending = array_merge(
-            $loader->getSuites(),
-            $this->loadPestTests(),
-        );
+        $this->pending = array_merge($this->loadPhpUnitTests(), $this->loadPestTests(), );
 
         $this->sortPending();
-
-        foreach ($this->pending as $pending) {
-            $this->printer->addTest($pending);
-        }
     }
 
     private function sortPending(): void
@@ -141,12 +124,10 @@ final class Runner implements RunnerInterface
 
         $this->writeRecap();
 
-        $this->log();
+        $this->logToJUnit($this->options);
         $this->logCoverage($this->options, $this->output);
-        $readers = $this->interpreter->getReaders();
-        foreach ($readers as $reader) {
-            $reader->removeLog();
-        }
+
+        $this->clearTestLogs();
     }
 
     /**
@@ -156,10 +137,10 @@ final class Runner implements RunnerInterface
     private function writeRecap(): void
     {
         $types = [
-            TestResult::FAIL    => $this->interpreter->getTotalFailures() + $this->interpreter->getTotalErrors(),
-            TestResult::WARN    => $this->interpreter->getTotalWarnings(),
-            TestResult::SKIPPED => $this->interpreter->getTotalSkipped(),
-            TestResult::PASS    => $this->interpreter->getTotalTests() - $this->interpreter->getTotalFailures() - $this->interpreter->getTotalErrors() - $this->interpreter->getTotalWarnings() - $this->interpreter->getTotalSkipped(),
+            TestResult::FAIL    => $this->testsFailed(),
+            TestResult::WARN    => $this->testsWithWarnings(),
+            TestResult::SKIPPED => $this->testsSkipped(),
+            TestResult::PASS    => $this->testsPassed(),
         ];
 
         $tests = [];
@@ -201,21 +182,6 @@ final class Runner implements RunnerInterface
     final public function getExitCode(): int
     {
         return $this->exitcode;
-    }
-
-    /**
-     * Write output to JUnit format if requested.
-     */
-    private function log(): void
-    {
-        if (($logJunit = $this->options->logJunit()) === null) {
-            return;
-        }
-
-        $name = $this->options->path() ?? '';
-
-        $writer = new Writer($this->interpreter, $name);
-        $writer->write($logJunit);
     }
 
     private function doRun(): void
@@ -292,7 +258,7 @@ final class Runner implements RunnerInterface
         $executableTest = $worker->getExecutableTest();
 
         try {
-            $this->interpreter->addReader(new Reader($executableTest->getTempFile()));
+            $this->addReaderForTest($executableTest);
         } catch (EmptyLogFileException $emptyLogFileException) {
             throw $worker->getWorkerCrashedException($emptyLogFileException);
         }
@@ -300,29 +266,5 @@ final class Runner implements RunnerInterface
         $this->addCoverage($executableTest, $this->options);
 
         return false;
-    }
-
-    /**
-     * @return array<ExecutablePestTest>
-     */
-    private function loadPestTests(): array
-    {
-        $pestTestSuite = TestSuite::getInstance();
-
-        $files = array_values(array_map(function (TestCaseFactory $factory): string {
-            return $factory->filename;
-        }, $pestTestSuite->tests->state));
-
-        $occurrences = array_count_values($files);
-
-        return array_values(array_map(function (int $occurrences, string $file): ExecutablePestTest {
-            return new ExecutablePestTest(
-                $file,
-                $occurrences,
-                $this->options->hasCoverage(),
-                $this->options->hasLogTeamcity(),
-                $this->options->tmpDir(),
-            );
-        }, $occurrences, array_keys($occurrences)));
     }
 }
