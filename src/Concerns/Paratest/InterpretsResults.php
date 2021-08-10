@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Pest\Parallel\Concerns\Paratest;
 
+use NunoMaduro\Collision\Adapters\Phpunit\TestResult;
 use ParaTest\Logging\JUnit\Reader;
 use ParaTest\Logging\JUnit\Writer;
 use ParaTest\Logging\LogInterpreter;
 use ParaTest\Runners\PHPUnit\EmptyLogFileException;
 use ParaTest\Runners\PHPUnit\ExecutableTest;
 use ParaTest\Runners\PHPUnit\Options;
+use SebastianBergmann\Timer\Duration;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @internal
@@ -17,15 +20,17 @@ use ParaTest\Runners\PHPUnit\Options;
 trait InterpretsResults
 {
     /**
-     * An interpreter used to calculate the outcome of the test results.
-     *
-     * @var LogInterpreter
+     * @var LogInterpreter|null
      */
-    private $interpreter;
+    private $interpreter = null;
 
-    private function initInterpretsResults(): void
+    private function getInterpreter(): LogInterpreter
     {
-        $this->interpreter = new LogInterpreter();
+        if ($this->interpreter === null) {
+            $this->interpreter = new LogInterpreter();
+        }
+
+        return $this->interpreter;
     }
 
     /**
@@ -39,7 +44,7 @@ trait InterpretsResults
 
         $name = $options->path() ?? '';
 
-        $writer = new Writer($this->interpreter, $name);
+        $writer = new Writer($this->getInterpreter(), $name);
         $writer->write($logJunit);
     }
 
@@ -48,7 +53,7 @@ trait InterpretsResults
      */
     private function addReaderForTest(ExecutableTest $test): void
     {
-        $this->interpreter->addReader(new Reader($test->getTempFile()));
+        $this->getInterpreter()->addReader(new Reader($test->getTempFile()));
     }
 
     /**
@@ -56,7 +61,7 @@ trait InterpretsResults
      */
     private function clearTestLogs(): void
     {
-        foreach ($this->interpreter->getReaders() as $reader) {
+        foreach ($this->getInterpreter()->getReaders() as $reader) {
             $reader->removeLog();
         }
     }
@@ -66,7 +71,7 @@ trait InterpretsResults
      */
     private function testsPassed(): int
     {
-        return $this->interpreter->getTotalTests()
+        return $this->getInterpreter()->getTotalTests()
             - $this->testsFailed()
             - $this->testsWithWarnings()
             - $this->testsSkipped();
@@ -77,7 +82,7 @@ trait InterpretsResults
      */
     private function testsFailed(): int
     {
-        return $this->interpreter->getTotalFailures() + $this->interpreter->getTotalErrors();
+        return $this->getInterpreter()->getTotalFailures() + $this->getInterpreter()->getTotalErrors();
     }
 
     /**
@@ -85,7 +90,7 @@ trait InterpretsResults
      */
     private function testsWithWarnings(): int
     {
-        return $this->interpreter->getTotalWarnings();
+        return $this->getInterpreter()->getTotalWarnings();
     }
 
     /**
@@ -93,6 +98,52 @@ trait InterpretsResults
      */
     private function testsSkipped(): int
     {
-        return $this->interpreter->getTotalSkipped();
+        return $this->getInterpreter()->getTotalSkipped();
+    }
+
+    /**
+     * This is basically a slightly tweaked version of the recap provided by
+     * Collision. We just alter it so that it understands Paratest.
+     */
+    private function printRecap(OutputInterface $output, Duration $duration): void
+    {
+        $types = [
+            TestResult::FAIL    => $this->testsFailed(),
+            TestResult::WARN    => $this->testsWithWarnings(),
+            TestResult::SKIPPED => $this->testsSkipped(),
+            TestResult::PASS    => $this->testsPassed(),
+        ];
+
+        $tests = [];
+
+        foreach ($types as $type => $number) {
+            if ($number === 0) {
+                continue;
+            }
+
+            $color   = TestResult::makeColor($type);
+            $tests[] = "<fg=$color;options=bold>$number $type</>";
+        }
+
+        $output->write([
+            "\n",
+            sprintf(
+                '  <fg=white;options=bold>Tests:  </><fg=default>%s</>',
+                implode(', ', $tests)
+            ),
+        ]);
+
+        $timeElapsed = number_format($duration->asSeconds(), 2, '.', '');
+
+        $output->writeln([
+                '',
+                sprintf(
+                    '  <fg=white;options=bold>Time:   </><fg=default>%ss</>',
+                    $timeElapsed
+                ),
+            ]
+        );
+
+        $output->writeln('');
     }
 }
