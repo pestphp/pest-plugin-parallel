@@ -101,20 +101,22 @@ final class PestRunnerWorker
 
     private function handleOutput(string $output)
     {
-        $matches = [];
-        preg_match_all('/^\\n/m', $output, $matches, PREG_OFFSET_CAPTURE);
+        try {
+            preg_match_all('/^\\n/m', $output, $matches, PREG_OFFSET_CAPTURE);
 
-        $overview = substr($output, 0, $matches[0][1][1]);
-        $this->output->write($overview);
+            $this->output->write(substr($output, 0, $matches[0][1][1]));
 
-        if (count($matches[0]) > 3) {
-            $summarySectionIndex = count($matches[0]) - 2;
+            if (count($matches[0]) > 3) {
+                $summarySectionIndex = count($matches[0]) - 2;
 
-            static::$additionalOutput[] = substr(
-                $output,
-                $matches[0][1][1],
-                $matches[0][$summarySectionIndex][1] - $matches[0][1][1],
-            );
+                static::$additionalOutput[] = substr(
+                    $output,
+                    $matches[0][1][1],
+                    $matches[0][$summarySectionIndex][1] - $matches[0][1][1],
+                );
+            }
+        } catch (Throwable $exception) {
+            $this->output->write($output);
         }
     }
 
