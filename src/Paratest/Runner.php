@@ -142,7 +142,7 @@ final class Runner implements RunnerInterface
         $this->writeRecap();
 
         $this->log();
-        $this->logCoverage($this->options);
+        $this->logCoverage($this->options, $this->output);
         $readers = $this->interpreter->getReaders();
         foreach ($readers as $reader) {
             $reader->removeLog();

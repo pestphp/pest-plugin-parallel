@@ -9,6 +9,7 @@ use ParaTest\Coverage\CoverageReporter;
 use ParaTest\Runners\PHPUnit\ExecutableTest;
 use ParaTest\Runners\PHPUnit\Options;
 use Pest\Support\Coverage;
+use Symfony\Component\Console\Output\OutputInterface;
 
 trait HandlesCoverage
 {
@@ -31,7 +32,7 @@ trait HandlesCoverage
     /**
      * Output the coverage report if requested.
      */
-    private function logCoverage(Options $options): void
+    private function logCoverage(Options $options, OutputInterface $output): void
     {
         if (!$options->hasCoverage()) {
             return;
@@ -42,46 +43,46 @@ trait HandlesCoverage
         $codeCoverage = $coverageMerger->getCodeCoverageObject();
         assert($codeCoverage !== null);
         $codeCoverageConfiguration = null;
-        if (($configuration = $this->options->configuration()) !== null) {
+        if (($configuration = $options->configuration()) !== null) {
             $codeCoverageConfiguration = $configuration->codeCoverage();
         }
 
         $reporter = new CoverageReporter($codeCoverage, $codeCoverageConfiguration);
 
-        if (($coverageClover = $this->options->coverageClover()) !== null) {
+        if (($coverageClover = $options->coverageClover()) !== null) {
             $reporter->clover($coverageClover);
         }
 
-        if (($coverageCobertura = $this->options->coverageCobertura()) !== null) {
+        if (($coverageCobertura = $options->coverageCobertura()) !== null) {
             $reporter->cobertura($coverageCobertura);
         }
 
-        if (($coverageCrap4j = $this->options->coverageCrap4j()) !== null) {
+        if (($coverageCrap4j = $options->coverageCrap4j()) !== null) {
             $reporter->crap4j($coverageCrap4j);
         }
 
-        if (($coverageHtml = $this->options->coverageHtml()) !== null) {
+        if (($coverageHtml = $options->coverageHtml()) !== null) {
             $reporter->html($coverageHtml);
         }
 
-        if (($coverageText = $this->options->coverageText()) !== null) {
+        if (($coverageText = $options->coverageText()) !== null) {
             if ($coverageText === '') {
-                $this->output->write($reporter->text());
+                $output->write($reporter->text());
             } else {
                 file_put_contents($coverageText, $reporter->text());
             }
         }
 
-        if (($coverageXml = $this->options->coverageXml()) !== null) {
+        if (($coverageXml = $options->coverageXml()) !== null) {
             $reporter->xml($coverageXml);
         }
 
-        if (($coveragePhp = $this->options->coveragePhp()) !== null) {
+        if (($coveragePhp = $options->coveragePhp()) !== null) {
             $reporter->php($coveragePhp);
         }
 
-        if ($this->options->coveragePhp() !== null && file_exists(Coverage::getPath())) {
-            Coverage::report($this->output);
+        if ($options->coveragePhp() !== null && file_exists(Coverage::getPath())) {
+            Coverage::report($output);
         }
     }
 
