@@ -21,8 +21,12 @@
         "psr-4": {
             "Pest\\Parallel\\": "src/"
         },
+        "exclude-from-classmap": [
+            "ParaTest\\Runners\\PHPUnit\\Worker\\RunnerWorker"
+        ],
         "files": [
-            "src/Autoload.php"
+            "src/Autoload.php",
+            "build/RunnerWorker.php"
         ]
     },
     "require-dev": {
