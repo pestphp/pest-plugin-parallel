@@ -14,7 +14,7 @@
     "require": {
         "php": "^7.3 || ^8.0",
         "brianium/paratest": "^6.3",
-        "pestphp/pest": "^1.0",
+        "pestphp/pest": "^1.0|dev-parallel",
         "pestphp/pest-plugin": "^1.0"
     },
     "autoload": {
