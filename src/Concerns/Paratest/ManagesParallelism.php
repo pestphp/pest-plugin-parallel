@@ -17,13 +17,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 trait ManagesParallelism
 {
     /**
-     * The highest current exit code recorded by the test runners.
-     *
-     * @var int
-     */
-    private $exitcode = -1;
-
-    /**
      * The number of microseconds to sleep for before checking
      * active runners for completed tests.
      *
@@ -32,6 +25,13 @@ trait ManagesParallelism
      * @var int
      */
     private $cycleSleep = 10000;
+
+    /**
+     * The highest current exit code recorded by the test runners.
+     *
+     * @var int
+     */
+    private $exitCode = -1;
 
     /**
      * A collection of pending ExecutableTest objects that have yet to run.
@@ -63,11 +63,12 @@ trait ManagesParallelism
             usleep($this->cycleSleep);
 
             $availableTokens = [];
-            foreach ($this->running as $token => $test) {
-                if ($this->testIsStillRunning($test, $options)) {
-                    continue;
-                }
 
+            $completedTests = array_filter($this->running, function (PestRunnerWorker $test) use ($options): bool {
+                return !$this->testIsStillRunning($test, $options);
+            });
+
+            foreach ($completedTests as $token => $test) {
                 unset($this->running[$token]);
                 $availableTokens[] = $token;
             }
@@ -92,10 +93,7 @@ trait ManagesParallelism
     }
 
     /**
-     * Returns whether a test has finished being
-     * executed. If it has, this method also halts a test process - optionally
-     * throwing an exception if a fatal error has occurred -
-     * prints feedback, and updates the overall exit code.
+     * Returns whether a test has finished being executed.
      *
      * @throws Exception
      */
@@ -105,16 +103,16 @@ trait ManagesParallelism
             return true;
         }
 
-        $this->exitcode = max($this->exitcode, (int) $worker->stop());
+        $this->exitCode = max($this->exitCode, (int) $worker->stop());
 
-        if ($options->stopOnFailure() && $this->exitcode > 0) {
+        if ($options->stopOnFailure() && $this->exitCode > TestRunner::SUCCESS_EXIT) {
             $this->pending = [];
         }
 
         if (
-            $this->exitcode > 0
-            && $this->exitcode !== TestRunner::FAILURE_EXIT
-            && $this->exitcode !== TestRunner::EXCEPTION_EXIT
+            $this->exitCode > TestRunner::SUCCESS_EXIT
+            && $this->exitCode !== TestRunner::FAILURE_EXIT
+            && $this->exitCode !== TestRunner::EXCEPTION_EXIT
         ) {
             throw $worker->getWorkerCrashedException();
         }
@@ -128,6 +126,6 @@ trait ManagesParallelism
 
     final public function getExitCode(): int
     {
-        return $this->exitcode;
+        return $this->exitCode;
     }
 }
