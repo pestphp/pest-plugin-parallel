@@ -16,24 +16,36 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @internal
  *
- * @phpstan-ignore-next-line
+ * @mixin RunnerWorker
  */
-final class PestRunnerWorker extends RunnerWorker
+final class PestRunnerWorker
 {
+    /**
+     * @var array<string>
+     */
+    public static $additionalOutput = [];
+
     /**
      * @var OutputInterface
      */
     private $output;
 
     /**
-     * @var array<string>
+     * @var RunnerWorker
      */
-    public static $additionalOutput = [];
+    private $paratestRunner;
 
     public function __construct(OutputInterface $output, ExecutableTest $executableTest, Options $options, int $token)
     {
-        parent::__construct($executableTest, $options, $token);
-        $this->output = $output;
+        $this->output         = $output;
+        $this->paratestRunner = new RunnerWorker(
+            $executableTest,
+            $options,
+            $token,
+            function (array $args, Options $options): array {
+                return static::editArgs($args, $options);
+            }
+        );
     }
 
     /**
@@ -41,8 +53,8 @@ final class PestRunnerWorker extends RunnerWorker
      */
     public function stop(): ?int
     {
-        $exitCode = parent::stop();
-        $this->handleOutput($this->process->getOutput());
+        $exitCode = $this->paratestRunner->stop();
+        $this->handleOutput($this->paratestRunner->process->getOutput());
 
         return $exitCode;
     }
@@ -73,14 +85,25 @@ final class PestRunnerWorker extends RunnerWorker
     }
 
     /**
+     * @param array<int, mixed> $arguments
+     *
+     * @return mixed
+     */
+    public function __call(string $name, array $arguments)
+    {
+        /* @phpstan-ignore-next-line  */
+        return $this->paratestRunner->$name(...$arguments);
+    }
+
+    /**
      * @param array<int, string> $args
      *
      * @return array<int, string>
      */
-    public function editArgs(array $args, Options $options): array
+    private static function editArgs(array $args, Options $options): array
     {
         $phpUnitIndex        = array_search($options->phpunit(), $args, true);
-        $args[$phpUnitIndex] = $this->getPestBinary($options);
+        $args[$phpUnitIndex] = static::getPestBinary($options);
 
         $printerIndex        = array_search(NullPhpunitPrinter::class, $args, true);
         $args[$printerIndex] = Printer::class;
@@ -88,7 +111,7 @@ final class PestRunnerWorker extends RunnerWorker
         return $args;
     }
 
-    private function getPestBinary(Options $options): string
+    private static function getPestBinary(Options $options): string
     {
         $paths = [
             implode(DIRECTORY_SEPARATOR, [$options->cwd(), 'bin', 'pest']),

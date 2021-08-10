@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ParaTest\Runners\PHPUnit\Worker;
 
+use Closure;
 use ParaTest\Runners\PHPUnit\ExecutableTest;
 use ParaTest\Runners\PHPUnit\Options;
 use ParaTest\Runners\PHPUnit\WorkerCrashedException;
@@ -13,16 +14,15 @@ use Symfony\Component\Process\Process;
 use Throwable;
 
 /**
- * This is a copy of Paratest's Runner Worker with a few minor tweaks.
- * First, we make the class abstract instead of final. Then, we
- * present a hook that allows for editing the arguments before
- * they are sent to the Process.
+ * This is a copy of Paratest's Runner Worker with a few minor tweaks:
+ * 1) We make the $process property public
+ * 2) We add an $argEditor Closure to the constructor as a hook for using the Pest runner.
  *
  * @internal
  *
  * @see \ParaTest\Runners\PHPUnit\Worker\RunnerWorker
  */
-abstract class RunnerWorker
+final class RunnerWorker
 {
     /**
      * @var ExecutableTest
@@ -32,14 +32,9 @@ abstract class RunnerWorker
     /**
      * @var Process<mixed>
      */
-    protected $process;
+    public $process;
 
-    /**
-     * @var array<string>
-     */
-    public static $additionalOutput = [];
-
-    public function __construct(ExecutableTest $executableTest, Options $options, int $token)
+    public function __construct(ExecutableTest $executableTest, Options $options, int $token, Closure $argEditor)
     {
         $this->executableTest = $executableTest;
 
@@ -60,7 +55,7 @@ abstract class RunnerWorker
             )
         );
 
-        $args = $this->editArgs($args, $options);
+        $args = $argEditor($args, $options);
 
         $this->process = new Process($args, $options->cwd(), $options->fillEnvWithTokens($token));
 
@@ -135,16 +130,4 @@ abstract class RunnerWorker
             $previousException
         );
     }
-
-    /**
-     * This provides a single opportunity for you to override
-     * any arguments sent to the Symfony Process before it
-     * is created. This is our monkey patch in what is
-     * otherwise a standard Paratest RunnerWorker.
-     *
-     * @param array<int, string> $args
-     *
-     * @return array<int, string>
-     */
-    abstract public function editArgs(array $args, Options $options): array;
 }
