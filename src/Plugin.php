@@ -7,6 +7,7 @@ namespace Pest\Parallel;
 use Pest\Actions\LoadStructure;
 use Pest\Contracts\Plugins\HandlesArguments;
 use Pest\Parallel\Paratest\Runner;
+use Pest\Support\Arr;
 use Pest\TestSuite;
 use Symfony\Component\Console\Input\ArgvInput;
 
@@ -18,6 +19,8 @@ final class Plugin implements HandlesArguments
     public function handleArguments(array $arguments): array
     {
         if (!in_array('--parallel', $arguments, true)) {
+            $this->markTestSuiteAsParallelIfRequired();
+
             return $arguments;
         }
 
@@ -27,6 +30,13 @@ final class Plugin implements HandlesArguments
         $this->colors($arguments);
 
         return $arguments;
+    }
+
+    private function markTestSuiteAsParallelIfRequired(): void
+    {
+        if (Arr::get($_SERVER, 'PARATEST', false) !== false) {
+            TestSuite::getInstance()->isInParallel = true;
+        }
     }
 
     /**
