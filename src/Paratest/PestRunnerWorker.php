@@ -6,6 +6,7 @@ namespace Pest\Parallel\Paratest;
 
 use function array_merge;
 use const DIRECTORY_SEPARATOR;
+use InvalidArgumentException;
 use ParaTest\Runners\PHPUnit\ExecutableTest;
 use ParaTest\Runners\PHPUnit\Options;
 use ParaTest\Runners\PHPUnit\WorkerCrashedException;
@@ -24,7 +25,9 @@ final class PestRunnerWorker
     /** @var ExecutableTest */
     private $executableTest;
 
-    /** @var Process */
+    /**
+     * @var Process<mixed>
+     */
     private $process;
 
     /**
@@ -88,8 +91,9 @@ final class PestRunnerWorker
     }
 
     /**
-     * Stop the process and return it's
-     * exit code.
+     * Stop the process and return it's exit code.
+     *
+     * @phpstan-ignore-next-line
      */
     public function stop(): ?int
     {
@@ -99,7 +103,7 @@ final class PestRunnerWorker
         return $exitCode;
     }
 
-    private function handleOutput(string $output)
+    private function handleOutput(string $output): void
     {
         try {
             preg_match_all('/^\\n/m', $output, $matches, PREG_OFFSET_CAPTURE);
@@ -115,7 +119,7 @@ final class PestRunnerWorker
                     $matches[0][$summarySectionIndex][1] - $matches[0][1][1],
                 );
             }
-        } catch (Throwable $exception) {
+        } catch (InvalidArgumentException $exception) {
             $this->output->write($output);
         }
     }
@@ -156,6 +160,9 @@ final class PestRunnerWorker
         return file_exists($paths[0]) ? $paths[0] : $paths[1];
     }
 
+    /**
+     * @phpstan-ignore-next-line
+     */
     public function getWorkerCrashedException(?Throwable $previousException = null): WorkerCrashedException
     {
         return WorkerCrashedException::fromProcess(

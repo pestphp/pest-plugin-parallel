@@ -164,7 +164,7 @@ final class Runner implements RunnerInterface
      * This is basically a slightly edited version of the recap provided by
      * Collision. We just alter it so that it understands Paratest.
      */
-    private function writeRecap()
+    private function writeRecap(): void
     {
         $types = [
             TestResult::FAIL    => $this->results->getTotalFailures() + $this->results->getTotalErrors(),
@@ -172,6 +172,8 @@ final class Runner implements RunnerInterface
             TestResult::SKIPPED => $this->results->getTotalSkipped(),
             TestResult::PASS    => $this->results->getTotalTests() - $this->results->getTotalFailures() - $this->results->getTotalErrors() - $this->results->getTotalWarnings() - $this->results->getTotalSkipped(),
         ];
+
+        $tests = [];
 
         foreach ($types as $type => $number) {
             if ($number === 0) {
@@ -289,7 +291,7 @@ final class Runner implements RunnerInterface
             sprintf('done [%s]', $timer->stop()->asString())
         );
 
-        if ($this->options->coveragePhp() && file_exists(Coverage::getPath())) {
+        if ($this->options->coveragePhp() !== null && file_exists(Coverage::getPath())) {
             Coverage::report($this->output);
         }
     }
@@ -299,6 +301,9 @@ final class Runner implements RunnerInterface
         return $this->options->hasCoverage();
     }
 
+    /**
+     * @phpstan-ignore-next-line
+     */
     private function getCoverage(): ?CoverageMerger
     {
         return $this->coverage;
@@ -323,7 +328,10 @@ final class Runner implements RunnerInterface
         }
     }
 
-    private function fillRunQueue(array $availableTokens)
+    /**
+     * @param array<int, int> $availableTokens
+     */
+    private function fillRunQueue(array $availableTokens): void
     {
         while (
             count($this->pending) > 0
@@ -352,7 +360,7 @@ final class Runner implements RunnerInterface
      *
      * @throws Exception
      */
-    private function testIsStillRunning(PestRunnerWorker $worker)
+    private function testIsStillRunning(PestRunnerWorker $worker): bool
     {
         if ($worker->isRunning()) {
             return true;
@@ -402,7 +410,7 @@ final class Runner implements RunnerInterface
 
         $occurrences = array_count_values($files);
 
-        $tests = array_values(array_map(function (int $occurrences, string $file) {
+        $tests = array_values(array_map(function (int $occurrences, string $file): ExecutablePestTest {
             return new ExecutablePestTest(
                 $file,
                 $occurrences,

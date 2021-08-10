@@ -17,7 +17,7 @@ final class Plugin implements HandlesArguments
 {
     public function handleArguments(array $arguments): array
     {
-        if (!in_array('--parallel', $arguments)) {
+        if (!in_array('--parallel', $arguments, true)) {
             return $arguments;
         }
 
@@ -29,12 +29,18 @@ final class Plugin implements HandlesArguments
         return $arguments;
     }
 
+    /**
+     * @param array<string> $arguments
+     */
     private function parallel(array &$arguments): void
     {
         $this->unsetArgument($arguments, '--parallel');
         $this->setArgument($arguments, '--runner', Runner::class);
     }
 
+    /**
+     * @param array<string> $arguments
+     */
     private function colors(array &$arguments): void
     {
         $isDecorated = (new ArgvInput($arguments))->getParameterOption('--colors', 'always') !== 'never';
@@ -48,6 +54,9 @@ final class Plugin implements HandlesArguments
         }
     }
 
+    /**
+     * @param array<string> $arguments
+     */
     private function setArgument(array &$arguments, string $key, string $value = null): void
     {
         $arguments[] = $key;
@@ -57,9 +66,12 @@ final class Plugin implements HandlesArguments
         }
     }
 
+    /**
+     * @param array<string> $arguments
+     */
     private function unsetArgument(array &$arguments, string $argument): bool
     {
-        if (($key = array_search($argument, $arguments)) !== false) {
+        if (($key = array_search($argument, $arguments, true)) !== false) {
             unset($arguments[$key]);
 
             return true;
