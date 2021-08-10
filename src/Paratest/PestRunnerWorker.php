@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Pest\Parallel\Paratest;
 
-use NunoMaduro\Collision\Adapters\Phpunit\Printer;
-use ParaTest\Runners\PHPUnit\Worker\NullPhpunitPrinter;
 use function array_merge;
 use const DIRECTORY_SEPARATOR;
 use InvalidArgumentException;
+use NunoMaduro\Collision\Adapters\Phpunit\Printer;
 use ParaTest\Runners\PHPUnit\ExecutableTest;
 use ParaTest\Runners\PHPUnit\Options;
+use ParaTest\Runners\PHPUnit\Worker\NullPhpunitPrinter;
 use ParaTest\Runners\PHPUnit\WorkerCrashedException;
 use RuntimeException;
 use function strlen;
@@ -74,11 +74,11 @@ final class PestRunnerWorker
     }
 
     /**
-     * @param  array<int, string>  $args
+     * @param array<int, string> $args
      */
     private function overridePrinter(array &$args)
     {
-        $arrayIndex = array_search(NullPhpunitPrinter::class, $args);
+        $arrayIndex        = array_search(NullPhpunitPrinter::class, $args);
         $args[$arrayIndex] = Printer::class;
     }
 

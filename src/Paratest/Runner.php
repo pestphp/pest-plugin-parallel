@@ -70,6 +70,13 @@ final class Runner implements RunnerInterface
     private $interpreter;
 
     /**
+     * A timer used to track the duration of the test suite.
+     *
+     * @var Timer
+     */
+    private $timer;
+
+    /**
      * CoverageMerger to hold track of the accumulated coverage.
      *
      * @var CoverageMerger|null
@@ -83,6 +90,7 @@ final class Runner implements RunnerInterface
         $this->interpreter = new LogInterpreter();
         $this->results     = $this->interpreter;
         $this->printer     = new ResultPrinter($this->interpreter, $output, $options);
+        $this->timer       = new Timer();
 
         if (!$this->options->hasCoverage()) {
             return;
@@ -93,8 +101,9 @@ final class Runner implements RunnerInterface
 
     final public function run(): void
     {
+        $this->timer->start();
+
         $this->load(new SuiteLoader($this->options, $this->output));
-//        $this->printer->start();
 
         $this->doRun();
 
@@ -192,7 +201,7 @@ final class Runner implements RunnerInterface
             ),
         ]);
 
-        $timeElapsed = number_format($this->results->getTotalTime(), 2, '.', '');
+        $timeElapsed = number_format($this->timer->stop()->asSeconds(), 2, '.', '');
         $this->output->writeln([
                 '',
                 sprintf(
