@@ -6,8 +6,6 @@ namespace Pest\Parallel\Paratest;
 
 use Exception;
 use NunoMaduro\Collision\Adapters\Phpunit\TestResult;
-use ParaTest\Coverage\CoverageMerger;
-use ParaTest\Coverage\CoverageReporter;
 use ParaTest\Logging\JUnit\Reader;
 use ParaTest\Logging\JUnit\Writer;
 use ParaTest\Logging\LogInterpreter;
@@ -18,7 +16,7 @@ use ParaTest\Runners\PHPUnit\ResultPrinter;
 use ParaTest\Runners\PHPUnit\RunnerInterface;
 use ParaTest\Runners\PHPUnit\SuiteLoader;
 use Pest\Factories\TestCaseFactory;
-use Pest\Support\Coverage;
+use Pest\Parallel\Concerns\Paratest\HandlesCoverage;
 use Pest\TestSuite;
 use PHPUnit\TextUI\TestRunner;
 use SebastianBergmann\Timer\Timer;
@@ -26,6 +24,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class Runner implements RunnerInterface
 {
+    use HandlesCoverage;
+
     private const CYCLE_SLEEP = 10000;
 
     /**
@@ -68,13 +68,6 @@ final class Runner implements RunnerInterface
      */
     private $timer;
 
-    /**
-     * CoverageMerger to hold track of the accumulated coverage.
-     *
-     * @var CoverageMerger|null
-     */
-    private $coverage = null;
-
     public function __construct(Options $options, OutputInterface $output)
     {
         $this->options     = $options;
@@ -83,11 +76,7 @@ final class Runner implements RunnerInterface
         $this->printer     = new ResultPrinter($this->interpreter, $output, $options);
         $this->timer       = new Timer();
 
-        if (!$this->options->hasCoverage()) {
-            return;
-        }
-
-        $this->coverage = new CoverageMerger($this->options->coverageTestLimit());
+        $this->initCoverage($this->options);
     }
 
     final public function run(): void
@@ -153,7 +142,7 @@ final class Runner implements RunnerInterface
         $this->writeRecap();
 
         $this->log();
-        $this->logCoverage();
+        $this->logCoverage($this->options);
         $readers = $this->interpreter->getReaders();
         foreach ($readers as $reader) {
             $reader->removeLog();
@@ -227,86 +216,6 @@ final class Runner implements RunnerInterface
 
         $writer = new Writer($this->interpreter, $name);
         $writer->write($logJunit);
-    }
-
-    /**
-     * Write coverage to file if requested.
-     */
-    private function logCoverage(): void
-    {
-        if (!$this->hasCoverage()) {
-            return;
-        }
-
-        $coverageMerger = $this->getCoverage();
-        assert($coverageMerger !== null);
-        $codeCoverage = $coverageMerger->getCodeCoverageObject();
-        assert($codeCoverage !== null);
-        $codeCoverageConfiguration = null;
-        if (($configuration = $this->options->configuration()) !== null) {
-            $codeCoverageConfiguration = $configuration->codeCoverage();
-        }
-
-        $reporter = new CoverageReporter($codeCoverage, $codeCoverageConfiguration);
-
-        $this->output->writeln('');
-        $this->output->write('Generating code coverage report ... ');
-
-        $timer = new Timer();
-        $timer->start();
-
-        if (($coverageClover = $this->options->coverageClover()) !== null) {
-            $reporter->clover($coverageClover);
-        }
-
-        if (($coverageCobertura = $this->options->coverageCobertura()) !== null) {
-            $reporter->cobertura($coverageCobertura);
-        }
-
-        if (($coverageCrap4j = $this->options->coverageCrap4j()) !== null) {
-            $reporter->crap4j($coverageCrap4j);
-        }
-
-        if (($coverageHtml = $this->options->coverageHtml()) !== null) {
-            $reporter->html($coverageHtml);
-        }
-
-        if (($coverageText = $this->options->coverageText()) !== null) {
-            if ($coverageText === '') {
-                $this->output->write($reporter->text());
-            } else {
-                file_put_contents($coverageText, $reporter->text());
-            }
-        }
-
-        if (($coverageXml = $this->options->coverageXml()) !== null) {
-            $reporter->xml($coverageXml);
-        }
-
-        if (($coveragePhp = $this->options->coveragePhp()) !== null) {
-            $reporter->php($coveragePhp);
-        }
-
-        $this->output->writeln(
-            sprintf('done [%s]', $timer->stop()->asString())
-        );
-
-        if ($this->options->coveragePhp() !== null && file_exists(Coverage::getPath())) {
-            Coverage::report($this->output);
-        }
-    }
-
-    private function hasCoverage(): bool
-    {
-        return $this->options->hasCoverage();
-    }
-
-    /**
-     * @phpstan-ignore-next-line
-     */
-    private function getCoverage(): ?CoverageMerger
-    {
-        return $this->coverage;
     }
 
     private function doRun(): void
@@ -388,11 +297,7 @@ final class Runner implements RunnerInterface
             throw $worker->getWorkerCrashedException($emptyLogFileException);
         }
 
-        if ($this->hasCoverage()) {
-            $coverageMerger = $this->getCoverage();
-            assert($coverageMerger !== null);
-            $coverageMerger->addCoverageFromFile($executableTest->getCoverageFileName());
-        }
+        $this->addCoverage($executableTest, $this->options);
 
         return false;
     }
