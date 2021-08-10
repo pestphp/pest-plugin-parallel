@@ -15,6 +15,9 @@ use Pest\Parallel\Concerns\Paratest\ManagesParallelism;
 use SebastianBergmann\Timer\Timer;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * @internal
+ */
 final class Runner implements RunnerInterface
 {
     use LoadsTests;

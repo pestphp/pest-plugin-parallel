@@ -7,6 +7,8 @@ namespace Pest\Parallel\Paratest;
 use ParaTest\Runners\PHPUnit\ExecutableTest;
 
 /**
+ * @internal
+ *
  * @phpstan-ignore-next-line
  */
 final class ExecutablePestTest extends ExecutableTest
