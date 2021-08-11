@@ -12,6 +12,7 @@ use Pest\Parallel\Concerns\Paratest\HandlesCoverage;
 use Pest\Parallel\Concerns\Paratest\InterpretsResults;
 use Pest\Parallel\Concerns\Paratest\LoadsTests;
 use Pest\Parallel\Concerns\Paratest\ManagesParallelism;
+use Pest\Parallel\Support\OutputHandler;
 use SebastianBergmann\Timer\Timer;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -105,11 +106,11 @@ final class Runner implements RunnerInterface
      */
     private function complete(): void
     {
-        foreach (PestRunnerWorker::$additionalOutput as $output) {
+        foreach (OutputHandler::$additionalOutput as $output) {
             $this->output->write($output);
         }
 
-        PestRunnerWorker::$additionalOutput = [];
+        OutputHandler::reset();
 
         $this->printRecap($this->output, $this->timer->stop());
 
