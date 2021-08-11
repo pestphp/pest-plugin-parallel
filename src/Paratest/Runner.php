@@ -8,6 +8,7 @@ use ParaTest\Runners\PHPUnit\EmptyLogFileException;
 use ParaTest\Runners\PHPUnit\ExecutableTest;
 use ParaTest\Runners\PHPUnit\Options;
 use ParaTest\Runners\PHPUnit\RunnerInterface;
+use Pest\Actions\InteractsWithPlugins;
 use Pest\Parallel\Concerns\Paratest\HandlesCoverage;
 use Pest\Parallel\Concerns\Paratest\InterpretsResults;
 use Pest\Parallel\Concerns\Paratest\LoadsTests;
@@ -116,6 +117,8 @@ final class Runner implements RunnerInterface
 
         $this->logToJUnit($this->options);
         $this->logCoverage($this->options, $this->output);
+
+        $this->exitCode = InteractsWithPlugins::addOutput(self::getExitCode());
 
         $this->clearTestLogs();
     }

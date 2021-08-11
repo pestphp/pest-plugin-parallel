@@ -83,10 +83,6 @@ trait HandlesCoverage
         if (($coveragePhp = $options->coveragePhp()) !== null) {
             $reporter->php($coveragePhp);
         }
-
-        if ($options->coveragePhp() !== null && file_exists(Coverage::getPath())) {
-            Coverage::report($output);
-        }
     }
 
     /**

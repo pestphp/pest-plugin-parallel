@@ -141,9 +141,8 @@ trait InterpretsResults
                     '  <fg=white;options=bold>Time:   </><fg=default>%ss</>',
                     $timeElapsed
                 ),
+                '',
             ]
         );
-
-        $output->writeln('');
     }
 }
