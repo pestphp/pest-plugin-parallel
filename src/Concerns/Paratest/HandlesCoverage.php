@@ -33,7 +33,7 @@ trait HandlesCoverage
     }
 
     /**
-     * Output the coverage report if requested.
+     * Log the coverage report if requested and available.
      */
     private function logCoverage(Options $options, OutputInterface $output): void
     {
