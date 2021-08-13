@@ -18,7 +18,7 @@ final class Plugin implements HandlesArguments
 {
     public function handleArguments(array $arguments): array
     {
-        if (!in_array('--parallel', $arguments, true)) {
+        if (!$this->userWantsParallel($arguments)) {
             $this->markTestSuiteAsParallelIfRequired();
 
             return $arguments;
@@ -32,10 +32,16 @@ final class Plugin implements HandlesArguments
         return $arguments;
     }
 
+    private function userWantsParallel(array $arguments): bool
+    {
+        return in_array('--parallel', $arguments, true)
+            || in_array('-P', $arguments, true);
+    }
+
     private function markTestSuiteAsParallelIfRequired(): void
     {
         if (Arr::get($_SERVER, 'PARATEST') !== null) {
-            TestSuite::getInstance()->isInParallel = true;
+            $_SERVER['PEST_PARALLEL'] = 1;
         }
     }
 
