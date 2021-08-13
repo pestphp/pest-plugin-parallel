@@ -59,6 +59,12 @@ final class Runner implements RunnerInterface
 
     final public function run(): void
     {
+        $this->output->writeln(['', sprintf(
+            '  <options=bold>Running Pest in parallel using %s process%s</>',
+            $this->options->processes(),
+            $this->options->processes() > 1 ? 'es' : '',
+        )]);
+
         $this->timer->start();
         $this->doRun($this->load(), $this->options, $this->output);
         $this->complete();
