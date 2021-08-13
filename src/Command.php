@@ -7,7 +7,7 @@ namespace Pest\Parallel;
 use ParaTest\Console\Commands\ParaTestCommand;
 use Pest\Actions\InteractsWithPlugins;
 use Pest\TestSuite;
-use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\ArgvInput;
 
 final class Command
 {
@@ -20,7 +20,7 @@ final class Command
         $argv = InteractsWithPlugins::handleArguments($argv);
 
         $testSuite = TestSuite::getInstance();
-        return ParaTestCommand::applicationFactory($testSuite->rootPath)->run(new ArrayInput($argv));
+        return ParaTestCommand::applicationFactory($testSuite->rootPath)->run(new ArgvInput($argv));
     }
 
 }
