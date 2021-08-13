@@ -89,9 +89,7 @@ final class Plugin implements HandlesArguments
     {
         $isDecorated = (new ArgvInput($arguments))->getParameterOption('--colors', 'always') !== 'never';
 
-        foreach (['--colors', '--colors=always', '--colors=auto', '--colors=never'] as $value) {
-            $this->unsetArgument($arguments, $value);
-        }
+        $this->unsetArgument($arguments, '--colors');
 
         if ($isDecorated) {
             $this->setArgument($arguments, '--colors');
@@ -115,8 +113,12 @@ final class Plugin implements HandlesArguments
      */
     private function unsetArgument(array &$arguments, string $argument): bool
     {
-        if (($key = array_search($argument, $arguments, true)) !== false) {
-            unset($arguments[$key]);
+        $locatedKeys = array_keys(array_filter($arguments, function ($value) use ($argument) {
+            return strpos($value, $argument) === 0;
+        }));
+
+        if (count($locatedKeys) > 0) {
+            unset($arguments[$locatedKeys[0]]);
 
             return true;
         }
