@@ -45,7 +45,7 @@ final class Plugin implements HandlesArguments
     private function parallel(array &$arguments): void
     {
         $this->unsetArgument($arguments, '--parallel');
-        $this->unsetArgument($arguments, '-p');
+        $this->unsetArgument($arguments, '-P');
 
         $this->setArgument($arguments, '--runner', Runner::class);
     }
