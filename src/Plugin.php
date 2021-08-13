@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Pest\Parallel;
 
+use Illuminate\Testing\ParallelRunner;
+use ParaTest\Runners\PHPUnit\Options;
 use Pest\Actions\LoadStructure;
 use Pest\Contracts\Plugins\HandlesArguments;
 use Pest\Parallel\Paratest\Runner;
 use Pest\Support\Arr;
 use Pest\TestSuite;
 use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @internal
@@ -27,6 +30,7 @@ final class Plugin implements HandlesArguments
         LoadStructure::in(TestSuite::getInstance()->rootPath);
 
         $this->parallel($arguments);
+        $this->laravel($arguments);
         $this->colors($arguments);
 
         return $arguments;
@@ -46,7 +50,7 @@ final class Plugin implements HandlesArguments
     }
 
     /**
-     * @param array<string> $arguments
+     * @param array<int, string> $arguments
      */
     private function parallel(array &$arguments): void
     {
@@ -57,7 +61,22 @@ final class Plugin implements HandlesArguments
     }
 
     /**
-     * @param array<string> $arguments
+     * @param array<int, string> $arguments
+     */
+    private function laravel(array &$arguments): void
+    {
+        if (!class_exists(ParallelRunner::class)) {
+            return;
+        }
+
+        ParallelRunner::resolveRunnerUsing(function(Options $options, OutputInterface $output) {
+            return new Runner($options, $output);
+        });
+        $this->setArgument($arguments, '--runner', '\Illuminate\Testing\ParallelRunner');
+    }
+
+    /**
+     * @param array<int, string> $arguments
      */
     private function colors(array &$arguments): void
     {
