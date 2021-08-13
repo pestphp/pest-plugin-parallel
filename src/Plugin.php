@@ -40,7 +40,7 @@ final class Plugin implements HandlesArguments
 
     private function markTestSuiteAsParallelIfRequired(): void
     {
-        if (Arr::get($_SERVER, 'PARATEST') !== null) {
+        if (intval(Arr::get($_SERVER, 'PARATEST')) === 1) {
             $_SERVER['PEST_PARALLEL'] = 1;
         }
     }
