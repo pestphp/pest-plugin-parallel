@@ -66,7 +66,9 @@ final class Plugin implements HandlesArguments
      */
     private function laravel(array &$arguments): void
     {
-        if (!class_exists(ParallelRunner::class)) {
+        // We check for the Kernel because that proves we're in a Laravel application
+        // rather than just a Laravel package.
+        if (!class_exists('\App\Http\Kernel') || !class_exists(ParallelRunner::class)) {
             return;
         }
 
