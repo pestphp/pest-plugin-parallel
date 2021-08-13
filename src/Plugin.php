@@ -39,7 +39,7 @@ final class Plugin implements HandlesArguments
     private function userWantsParallel(array $arguments): bool
     {
         return in_array('--parallel', $arguments, true)
-            || in_array('-P', $arguments, true);
+            || in_array('-p', $arguments, true);
     }
 
     private function markTestSuiteAsParallelIfRequired(): void
@@ -55,7 +55,8 @@ final class Plugin implements HandlesArguments
     private function parallel(array &$arguments): void
     {
         $this->unsetArgument($arguments, '--parallel');
-        $this->unsetArgument($arguments, '-P');
+        $this->unsetArgument($arguments, '-p');
+        $this->unsetArgument($arguments, '--processes');
 
         $this->setArgument($arguments, '--runner', Runner::class);
     }
