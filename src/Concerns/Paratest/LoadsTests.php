@@ -35,11 +35,7 @@ trait LoadsTests
     {
         $pestTestSuite = TestSuite::getInstance();
 
-        $files = array_values(array_map(function (TestCaseFactory $factory): string {
-            return $factory->filename;
-        }, $pestTestSuite->tests->state));
-
-        $occurrences = array_count_values($files);
+        $occurrences = array_count_values($pestTestSuite->tests->getFilenames());
 
         return array_values(array_map(function (int $occurrences, string $file) use ($options): ExecutablePestTest {
             return new ExecutablePestTest(
