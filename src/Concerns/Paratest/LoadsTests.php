@@ -7,7 +7,6 @@ namespace Pest\Parallel\Concerns\Paratest;
 use ParaTest\Runners\PHPUnit\ExecutableTest;
 use ParaTest\Runners\PHPUnit\Options;
 use ParaTest\Runners\PHPUnit\SuiteLoader;
-use Pest\Factories\TestCaseFactory;
 use Pest\Parallel\Paratest\ExecutablePestTest;
 use Pest\TestSuite;
 use Symfony\Component\Console\Output\OutputInterface;

@@ -8,7 +8,6 @@ use ParaTest\Coverage\CoverageMerger;
 use ParaTest\Coverage\CoverageReporter;
 use ParaTest\Runners\PHPUnit\ExecutableTest;
 use ParaTest\Runners\PHPUnit\Options;
-use Pest\Support\Coverage;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**

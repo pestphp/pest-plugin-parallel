@@ -11,7 +11,6 @@ use Symfony\Component\Console\Input\ArgvInput;
 
 final class Command
 {
-
     /**
      * @param array<int, string> $argv
      */
@@ -20,7 +19,7 @@ final class Command
         $argv = InteractsWithPlugins::handleArguments($argv);
 
         $testSuite = TestSuite::getInstance();
+
         return ParaTestCommand::applicationFactory($testSuite->rootPath)->run(new ArgvInput($argv));
     }
-
 }
