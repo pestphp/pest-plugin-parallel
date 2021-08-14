@@ -64,11 +64,12 @@ trait ManagesParallelism
 
             $availableTokens = [];
 
-            $completedTests = array_filter($this->running, function (PestRunnerWorker $test) use ($options): bool {
-                return !$this->testIsStillRunning($test, $options);
+            $completedTests = array_filter($this->running, function (PestRunnerWorker $test): bool {
+                return !$test->isRunning();
             });
 
             foreach ($completedTests as $token => $test) {
+                $this->tearDown($test, $options);
                 unset($this->running[$token]);
                 $availableTokens[] = $token;
             }
@@ -92,17 +93,8 @@ trait ManagesParallelism
         }
     }
 
-    /**
-     * Returns whether a test has finished being executed.
-     *
-     * @throws Exception
-     */
-    private function testIsStillRunning(PestRunnerWorker $worker, Options $options): bool
+    private function tearDown(PestRunnerWorker $worker, Options $options): void
     {
-        if ($worker->isRunning()) {
-            return true;
-        }
-
         $this->exitCode = max($this->exitCode, (int) $worker->stop());
 
         if ($options->stopOnFailure() && $this->exitCode > TestRunner::SUCCESS_EXIT) {
@@ -118,8 +110,6 @@ trait ManagesParallelism
         }
 
         $this->handleExecutedTest($worker->getExecutableTest(), $worker);
-
-        return false;
     }
 
     abstract public function handleExecutedTest(ExecutableTest $test, PestRunnerWorker $worker): void;

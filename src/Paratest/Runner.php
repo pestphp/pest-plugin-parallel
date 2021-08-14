@@ -53,8 +53,6 @@ final class Runner implements RunnerInterface
         $this->options     = $options;
         $this->output      = $output;
         $this->timer       = new Timer();
-
-        $this->initCoverage($this->options);
     }
 
     final public function run(): void

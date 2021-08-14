@@ -17,19 +17,21 @@ use Symfony\Component\Console\Output\OutputInterface;
 trait HandlesCoverage
 {
     /**
-     * CoverageMerger to hold track of the accumulated coverage.
-     *
      * @var CoverageMerger|null
      */
     private $coverage = null;
 
-    private function initCoverage(Options $options): void
+    private function getCoverage(Options $options): ?CoverageMerger
     {
         if (!$options->hasCoverage()) {
-            return;
+            return null;
         }
 
-        $this->coverage = new CoverageMerger($options->coverageTestLimit());
+        if ($this->coverage === null) {
+            $this->coverage = new CoverageMerger($options->coverageTestLimit());
+        }
+
+        return $this->coverage;
     }
 
     /**
@@ -37,11 +39,12 @@ trait HandlesCoverage
      */
     private function logCoverage(Options $options, OutputInterface $output): void
     {
-        if (!$options->hasCoverage()) {
+        $coverageMerger = $this->getCoverage($options);
+
+        if (!$coverageMerger === null) {
             return;
         }
 
-        $coverageMerger = $this->coverage;
         assert($coverageMerger !== null);
         $codeCoverage = $coverageMerger->getCodeCoverageObject();
         assert($codeCoverage !== null);
@@ -90,11 +93,12 @@ trait HandlesCoverage
      */
     private function addCoverage(ExecutableTest $test, Options $options): void
     {
-        if (!$options->hasCoverage()) {
+        $coverageMerger = $this->getCoverage($options);
+
+        if (!$coverageMerger === null) {
             return;
         }
 
-        $coverageMerger = $this->coverage;
         assert($coverageMerger !== null);
         $coverageMerger->addCoverageFromFile($test->getCoverageFileName());
     }
