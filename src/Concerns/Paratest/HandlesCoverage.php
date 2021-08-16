@@ -94,7 +94,7 @@ trait HandlesCoverage
     {
         $coverageMerger = $this->getCoverage($options);
 
-        if (!$coverageMerger === null) {
+        if ($coverageMerger === null) {
             return;
         }
 
