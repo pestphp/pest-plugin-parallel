@@ -44,7 +44,6 @@ trait HandlesCoverage
             return;
         }
 
-        assert($coverageMerger !== null);
         $codeCoverage = $coverageMerger->getCodeCoverageObject();
         assert($codeCoverage !== null);
         $codeCoverageConfiguration = null;
