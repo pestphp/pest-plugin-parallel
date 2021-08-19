@@ -97,7 +97,6 @@ trait HandlesCoverage
             return;
         }
 
-        assert($coverageMerger !== null);
         $coverageMerger->addCoverageFromFile($test->getCoverageFileName());
     }
 }
