@@ -72,7 +72,7 @@ final class Plugin implements HandlesArguments
         }
 
         if (!method_exists(ParallelRunner::class, 'resolveRunnerUsing')) {
-            exit('Using parallel with Pest requires Laravel v8.53.0 or higher.');
+            exit('Using parallel with Pest requires Laravel v8.55.0 or higher.');
         }
 
         ParallelRunner::resolveRunnerUsing(function (Options $options, OutputInterface $output) {
