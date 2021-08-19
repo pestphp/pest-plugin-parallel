@@ -20,6 +20,9 @@ trait HandlesCoverage
      */
     private $coverage;
 
+    /**
+     * @phpstan-ignore-next-line
+     */
     private function getCoverage(Options $options): ?CoverageMerger
     {
         if (!$options->hasCoverage()) {
