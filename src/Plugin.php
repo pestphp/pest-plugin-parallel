@@ -36,6 +36,9 @@ final class Plugin implements HandlesArguments
         return $arguments;
     }
 
+    /**
+     * @param array<int, string> $arguments
+     */
     private function userWantsParallel(array $arguments): bool
     {
         return in_array('--parallel', $arguments, true)
@@ -44,7 +47,7 @@ final class Plugin implements HandlesArguments
 
     private function markTestSuiteAsParallelIfRequired(): void
     {
-        if (intval(Arr::get($_SERVER, 'PARATEST')) === 1) {
+        if ((int) Arr::get($_SERVER, 'PARATEST') === 1) {
             $_SERVER['PEST_PARALLEL'] = 1;
         }
     }
@@ -56,7 +59,6 @@ final class Plugin implements HandlesArguments
     {
         $this->unsetArgument($arguments, '--parallel');
         $this->unsetArgument($arguments, '-p');
-        $this->unsetArgument($arguments, '--processes');
 
         $this->setArgument($arguments, '--runner', Runner::class);
     }
@@ -72,11 +74,12 @@ final class Plugin implements HandlesArguments
             return;
         }
 
+        // @phpstan-ignore-next-line
         if (!method_exists(ParallelRunner::class, 'resolveRunnerUsing')) {
-            exit('Using parallel with Pest requires Laravel v8.53.0 or higher.');
+            exit('Using parallel with Pest requires Laravel v8.55.0 or higher.');
         }
 
-        ParallelRunner::resolveRunnerUsing(function (Options $options, OutputInterface $output) {
+        ParallelRunner::resolveRunnerUsing(function (Options $options, OutputInterface $output): Runner {
             return new Runner($options, $output);
         });
         $this->setArgument($arguments, '--runner', '\Illuminate\Testing\ParallelRunner');
@@ -103,7 +106,7 @@ final class Plugin implements HandlesArguments
     {
         $arguments[] = $key;
 
-        if (strlen($value) > 0) {
+        if ($value !== '') {
             $arguments[] = $value;
         }
     }
@@ -113,7 +116,7 @@ final class Plugin implements HandlesArguments
      */
     private function unsetArgument(array &$arguments, string $argument): bool
     {
-        $locatedKeys = array_keys(array_filter($arguments, function ($value) use ($argument) {
+        $locatedKeys = array_keys(array_filter($arguments, function ($value) use ($argument): bool {
             return strpos($value, $argument) === 0;
         }));
 
