@@ -18,7 +18,7 @@ trait HandlesCoverage
     /**
      * @var CoverageMerger|null
      */
-    private $coverage = null;
+    private $coverage;
 
     private function getCoverage(Options $options): ?CoverageMerger
     {
@@ -44,7 +44,6 @@ trait HandlesCoverage
             return;
         }
 
-        assert($coverageMerger !== null);
         $codeCoverage = $coverageMerger->getCodeCoverageObject();
         assert($codeCoverage !== null);
         $codeCoverageConfiguration = null;
@@ -98,7 +97,6 @@ trait HandlesCoverage
             return;
         }
 
-        assert($coverageMerger !== null);
         $coverageMerger->addCoverageFromFile($test->getCoverageFileName());
     }
 }
