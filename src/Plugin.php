@@ -103,7 +103,7 @@ final class Plugin implements HandlesArguments
     {
         $arguments[] = $key;
 
-        if (strlen($value) > 0) {
+        if ($value !== '') {
             $arguments[] = $value;
         }
     }
