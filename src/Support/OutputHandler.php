@@ -32,7 +32,7 @@ final class OutputHandler
 
     public function handle(string $content): void
     {
-        if (strlen($content) === 0) {
+        if ($content === '') {
             return;
         }
 
