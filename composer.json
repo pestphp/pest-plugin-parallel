@@ -26,11 +26,13 @@
             "Pest\\Parallel\\": "src/"
         },
         "exclude-from-classmap": [
-            "ParaTest\\Runners\\PHPUnit\\Worker\\RunnerWorker"
+            "ParaTest\\Runners\\PHPUnit\\Worker\\RunnerWorker",
+            "ParaTest\\Runners\\PHPUnit\\BaseRunner"
         ],
         "files": [
             "src/Autoload.php",
-            "build/RunnerWorker.php"
+            "build/RunnerWorker.php",
+            "build/BaseRunner.php"
         ]
     },
     "extra": {
