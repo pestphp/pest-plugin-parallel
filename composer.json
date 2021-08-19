@@ -17,6 +17,10 @@
         "brianium/paratest": "^6.3",
         "pestphp/pest-plugin": "^1.0"
     },
+    "require-dev": {
+        "pestphp/pest": "dev-master",
+        "pestphp/pest-dev-tools": "dev-master"
+    },
     "autoload": {
         "psr-4": {
             "Pest\\Parallel\\": "src/"
@@ -28,10 +32,6 @@
             "src/Autoload.php",
             "build/RunnerWorker.php"
         ]
-    },
-    "require-dev": {
-        "pestphp/pest": "^1.0",
-        "pestphp/pest-dev-tools": "dev-master"
     },
     "extra": {
         "pest": {
