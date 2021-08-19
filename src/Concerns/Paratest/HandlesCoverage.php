@@ -18,7 +18,7 @@ trait HandlesCoverage
     /**
      * @var CoverageMerger|null
      */
-    private $coverage = null;
+    private $coverage;
 
     private function getCoverage(Options $options): ?CoverageMerger
     {
