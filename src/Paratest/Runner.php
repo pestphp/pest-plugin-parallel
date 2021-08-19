@@ -7,16 +7,18 @@ namespace Pest\Parallel\Paratest;
 use ParaTest\Runners\PHPUnit\BaseRunner;
 use ParaTest\Runners\PHPUnit\EmptyLogFileException;
 use ParaTest\Runners\PHPUnit\Options;
+use Pest\Actions\InteractsWithPlugins;
 use Pest\Parallel\Concerns\Paratest\InterpretsResults;
 use Pest\Parallel\Support\OutputHandler;
 use Pest\TestSuite;
-use Pest\Actions\InteractsWithPlugins;
 use PHPUnit\TextUI\TestRunner;
 use SebastianBergmann\Timer\Timer;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @internal
+ *
+ * @phpstan-ignore-next-line
  */
 final class Runner extends BaseRunner
 {
@@ -46,7 +48,7 @@ final class Runner extends BaseRunner
         parent::__construct($options, $output);
 
         $this->testSuite = TestSuite::getInstance();
-        $this->timer = new Timer();
+        $this->timer     = new Timer();
     }
 
     protected function getPestTests(): array
@@ -77,7 +79,7 @@ final class Runner extends BaseRunner
         $this->createWorkers();
     }
 
-    private function createWorkers()
+    private function createWorkers(): void
     {
         $availableTokens = range(1, $this->options->processes());
         while (count($this->running) > 0 || count($this->pending) > 0) {
@@ -117,9 +119,9 @@ final class Runner extends BaseRunner
 
     private function tearDown(PestRunnerWorker $worker): void
     {
-        $this->exitcode = max($this->exitcode, (int) $worker->stop());
+        $this->exitcode = max($this->getExitCode(), (int) $worker->stop());
 
-        if ($this->options->stopOnFailure() && $this->exitCode > TestRunner::SUCCESS_EXIT) {
+        if ($this->options->stopOnFailure() && $this->getExitCode() > TestRunner::SUCCESS_EXIT) {
             $this->pending = [];
         }
 
@@ -143,7 +145,6 @@ final class Runner extends BaseRunner
             return;
         }
 
-        assert($coverageMerger !== null);
         $coverageMerger->addCoverageFromFile($worker->getExecutableTest()->getCoverageFileName());
     }
 
@@ -160,7 +161,7 @@ final class Runner extends BaseRunner
         $this->logToJUnit($this->options);
         $this->logCoverage();
 
-        $this->exitCode = InteractsWithPlugins::addOutput(self::getExitCode());
+        $this->exitcode = InteractsWithPlugins::addOutput($this->getExitCode());
 
         $this->clearTestLogs();
     }
