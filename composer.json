@@ -21,6 +21,11 @@
         "pestphp/pest": "dev-master",
         "pestphp/pest-dev-tools": "dev-master"
     },
+    "conflict": {
+        "pestphp/pest": "<1.16",
+        "nunomaduro/collision": "<5.8",
+        "laravel/framework": "<8.55"
+    },
     "autoload": {
         "psr-4": {
             "Pest\\Parallel\\": "src/"
