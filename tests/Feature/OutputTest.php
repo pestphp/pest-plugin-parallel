@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Symfony\Component\Process\Process;
 
 beforeEach(function () {
-    $process = new Process(['php', 'vendor/bin/pest', '--parallel', '--group', 'runnable', '--processes=8'], dirname(__DIR__ . '/../../../'));
+    $process = new Process(['php', 'vendor/bin/pest', '--parallel', '--group', 'runnable', '--exclude-group', 'exclude', '--processes=8'], dirname(__DIR__ . '/../../../'));
     $process->run();
 
     $this->output = $process->getOutput();
@@ -37,4 +37,8 @@ it('includes a summary', function () {
 
 it('includes information about the number of processes being run', function () {
     expect($this->output)->toContain('Running Pest in parallel using 8 processes');
+});
+
+it('does not output information when no tests are executed', function () {
+    expect($this->output)->not->toContain('No tests executed');
 });
