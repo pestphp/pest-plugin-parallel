@@ -36,13 +36,11 @@ final class OutputHandler
             return;
         }
 
+        if (strpos($content, 'No tests executed!') !== false) {
+            return;
+        }
+
         try {
-            if (strpos($content, 'No tests executed!') !== false) {
-                $this->noTestsExecuted($content);
-
-                return;
-            }
-
             $this->standardOutput($content);
         } catch (Throwable $exception) { // @phpstan-ignore-line
             $this->output->write($content);
