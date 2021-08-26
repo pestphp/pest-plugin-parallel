@@ -59,6 +59,7 @@ final class Plugin implements HandlesArguments
     {
         $this->unsetArgument($arguments, '--parallel');
         $this->unsetArgument($arguments, '-p');
+        $this->unsetArgument($arguments, '--teamcity');
 
         $this->setArgument($arguments, '--runner', Runner::class);
     }
