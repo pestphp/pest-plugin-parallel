@@ -17,6 +17,7 @@ use Throwable;
  * This is a copy of Paratest's Runner Worker with a few minor tweaks:
  * 1) We make the $process property public
  * 2) We add an $argEditor Closure to the constructor as a hook for using the Pest runner.
+ * 3) We add COLLISION_FORCE_COLORS to the Process env to give us pretty code highlighting.
  *
  * @internal
  *
@@ -56,8 +57,9 @@ final class RunnerWorker
         );
 
         $args = $argEditor($args, $options);
+        $env = array_merge($options->fillEnvWithTokens($token), ['COLLISION_FORCE_COLORS' => 1]);
 
-        $this->process = new Process($args, $options->cwd(), $options->fillEnvWithTokens($token));
+        $this->process = new Process($args, $options->cwd(), $env);
 
         $cmd = $this->process->getCommandLine();
         $this->assertValidCommandLineLength($cmd);
