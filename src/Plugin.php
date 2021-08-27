@@ -60,8 +60,6 @@ final class Plugin implements HandlesArguments
         $this->unsetArgument($arguments, '--parallel');
         $this->unsetArgument($arguments, '-p');
 
-        $_SERVER['PEST_PARALLEL_STOP_ON_FAILURE'] = (new ArgvInput($arguments))->hasParameterOption('--stop-on-failure');
-
         $this->setArgument($arguments, '--runner', Runner::class);
     }
 

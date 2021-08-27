@@ -121,7 +121,8 @@ final class Runner extends BaseRunner
     {
         $this->exitcode = max($this->getExitCode(), (int) $worker->stop());
 
-        $hasStopOnFailure = $_SERVER['PEST_PARALLEL_STOP_ON_FAILURE'];
+        $filtered         = $this->options->filtered();
+        $hasStopOnFailure = array_key_exists('stop-on-failure', $filtered);
 
         if ($this->getExitCode() > TestRunner::SUCCESS_EXIT) {
             if ($hasStopOnFailure && $this->options->stopOnFailure()) {
