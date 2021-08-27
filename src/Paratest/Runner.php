@@ -121,7 +121,7 @@ final class Runner extends BaseRunner
     {
         $this->exitcode = max($this->getExitCode(), (int) $worker->stop());
 
-        if ($this->options->stopOnFailure() && $this->getExitCode() > TestRunner::SUCCESS_EXIT) {
+        if ($this->shouldStopOnFailure() && $this->getExitCode() > TestRunner::SUCCESS_EXIT) {
             $this->pending = [];
         }
 
@@ -146,6 +146,19 @@ final class Runner extends BaseRunner
         }
 
         $coverageMerger->addCoverageFromFile($worker->getExecutableTest()->getCoverageFileName());
+    }
+
+    private function shouldStopOnFailure(): bool
+    {
+        if ($this->options->stopOnFailure()) {
+            return true;
+        }
+
+        if ($this->options->configuration() === null) {
+            return false;
+        }
+
+        return $this->options->configuration()->phpunit()->stopOnFailure();
     }
 
     protected function complete(): void

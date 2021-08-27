@@ -2,13 +2,8 @@
 
 declare(strict_types=1);
 
-use Symfony\Component\Process\Process;
-
 beforeEach(function () {
-    $process = new Process(['php', 'vendor/bin/pest', '--parallel', '--group', 'runnable', '--exclude-group', 'exclude', '--processes=8'], dirname(__DIR__ . '/../../../'));
-    $process->run();
-
-    $this->output = $process->getOutput();
+    $this->output = runInternalTests(['--processes=8'])->getOutput();
 });
 
 it('includes the test case names', function () {
@@ -31,7 +26,7 @@ it('includes an output of all errors', function () {
 
 it('includes a summary', function () {
     expect($this->output)
-        ->toContain('Tests:  2 failed, 2 passed')
+        ->toContain('Tests:  5 failed, 2 passed')
         ->toMatch('/Time:   .*s/');
 });
 
