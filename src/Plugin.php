@@ -29,11 +29,10 @@ final class Plugin implements HandlesArguments
 
         LoadStructure::in(TestSuite::getInstance()->rootPath);
 
-        $this->parallel($arguments);
-        $this->laravel($arguments);
-        $this->colors($arguments);
+        $arguments = $this->parallel($arguments);
+        $arguments = $this->laravel($arguments);
 
-        return $arguments;
+        return $this->colors($arguments);
     }
 
     /**
@@ -54,24 +53,28 @@ final class Plugin implements HandlesArguments
 
     /**
      * @param array<int, string> $arguments
+     *
+     * @return array<int, string>
      */
-    private function parallel(array &$arguments): void
+    private function parallel(array $arguments): array
     {
-        $this->unsetArgument($arguments, '--parallel');
-        $this->unsetArgument($arguments, '-p');
+        $arguments = $this->unsetArgument($arguments, '--parallel');
+        $arguments = $this->unsetArgument($arguments, '-p');
 
-        $this->setArgument($arguments, '--runner', Runner::class);
+        return $this->setArgument($arguments, '--runner', Runner::class);
     }
 
     /**
      * @param array<int, string> $arguments
+     *
+     * @return array<int, string>
      */
-    private function laravel(array &$arguments): void
+    private function laravel(array $arguments): array
     {
         // We check for the Kernel because that proves we're in a Laravel application
         // rather than just a Laravel package.
         if (!class_exists('\App\Http\Kernel') || !class_exists(ParallelRunner::class)) {
-            return;
+            return $arguments;
         }
 
         // @phpstan-ignore-next-line
@@ -82,50 +85,57 @@ final class Plugin implements HandlesArguments
         ParallelRunner::resolveRunnerUsing(function (Options $options, OutputInterface $output): Runner {
             return new Runner($options, $output);
         });
-        $this->setArgument($arguments, '--runner', '\Illuminate\Testing\ParallelRunner');
+
+        $arguments = $this->unsetArgument($arguments, '--runner');
+
+        return $this->setArgument($arguments, '--runner', '\Illuminate\Testing\ParallelRunner');
     }
 
     /**
      * @param array<int, string> $arguments
+     *
+     * @return array<int, string>
      */
-    private function colors(array &$arguments): void
+    private function colors(array $arguments): array
     {
         $isDecorated = (new ArgvInput($arguments))->getParameterOption('--colors', 'always') !== 'never';
 
-        $this->unsetArgument($arguments, '--colors');
+        $arguments = $this->unsetArgument($arguments, '--colors');
 
         if ($isDecorated) {
-            $this->setArgument($arguments, '--colors');
+            $arguments = $this->setArgument($arguments, '--colors');
         }
+
+        return $arguments;
     }
 
     /**
      * @param array<int, string> $arguments
+     *
+     * @return array<int, string>
      */
-    private function setArgument(array &$arguments, string $key, string $value = ''): void
+    private function setArgument(array &$arguments, string $key, string $value = ''): array
     {
-        $arguments[] = $key;
+        $argument = $key;
 
         if ($value !== '') {
-            $arguments[] = $value;
+            $argument .= "={$value}";
         }
+
+        $arguments[] = $argument;
+
+        return $arguments;
     }
 
     /**
      * @param array<string> $arguments
+     *
+     * @return array<int, string>
      */
-    private function unsetArgument(array &$arguments, string $argument): bool
+    private function unsetArgument(array &$arguments, string $argument): array
     {
-        $locatedKeys = array_keys(array_filter($arguments, function ($value) use ($argument): bool {
-            return strpos($value, $argument) === 0;
-        }));
-
-        if (count($locatedKeys) > 0) {
-            unset($arguments[$locatedKeys[0]]);
-
-            return true;
-        }
-
-        return false;
+        return array_filter($arguments, function ($value) use ($argument): bool {
+            return strpos($value, $argument) !== 0;
+        });
     }
 }
