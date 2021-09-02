@@ -6,15 +6,19 @@ namespace Pest\Parallel\Arguments;
 
 use Illuminate\Testing\ParallelRunner;
 use ParaTest\Runners\PHPUnit\Options;
+use Pest\Parallel\Concerns\Arguments\ManagesArguments;
+use Pest\Parallel\Contracts\ArgumentHandler;
 use Pest\Parallel\Paratest\Runner;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @internal
  */
-final class Laravel extends Handler
+final class Laravel implements ArgumentHandler
 {
-    protected function editArgs(): void
+    use ManagesArguments;
+
+    private function editArguments(): void
     {
         if (!$this->isALaravelApplication()) {
             return;
