@@ -8,6 +8,7 @@ use Closure;
 use ParaTest\Runners\PHPUnit\ExecutableTest;
 use ParaTest\Runners\PHPUnit\Options;
 use ParaTest\Runners\PHPUnit\WorkerCrashedException;
+use Pest\Parallel\Support\ProcessEnvironmentHandler;
 use RuntimeException;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
@@ -17,7 +18,7 @@ use Throwable;
  * This is a copy of Paratest's Runner Worker with a few minor tweaks:
  * 1) We make the $process property public
  * 2) We add an $argEditor Closure to the constructor as a hook for using the Pest runner.
- * 3) We add COLLISION_FORCE_COLORS to the Process env to give us pretty code highlighting.
+ * 3) We call our ProcessEnvironmentHandler to define additional environment tokens that should be set.
  *
  * @internal
  *
@@ -57,7 +58,7 @@ final class RunnerWorker
         );
 
         $args = $argEditor($args, $options);
-        $env = array_merge($options->fillEnvWithTokens($token), ['COLLISION_FORCE_COLORS' => 1]);
+        $env = array_merge($options->fillEnvWithTokens($token), (new ProcessEnvironmentHandler($args))->getTokens());
 
         $this->process = new Process($args, $options->cwd(), $env);
 

@@ -24,7 +24,7 @@ trait ManagesArguments
     /**
      * Add an argument and an optional value to the given arguments.
      */
-    final private function setArgument(string $key, string $value = ''): self
+    private function setArgument(string $key, string $value = ''): self
     {
         $argument = $key;
 
@@ -40,7 +40,7 @@ trait ManagesArguments
     /**
      * Remove the given argument from the array if it exists.
      */
-    final private function unsetArgument(string $argument): self
+    private function unsetArgument(string $argument): self
     {
         $this->arguments = array_filter($this->arguments, function ($value) use ($argument): bool {
             return strpos($value, $argument) !== 0;

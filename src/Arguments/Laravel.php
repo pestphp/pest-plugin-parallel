@@ -20,7 +20,7 @@ final class Laravel implements ArgumentHandler
 
     private function editArguments(): void
     {
-        if (!$this->isALaravelApplication()) {
+        if (!static::isALaravelApplication()) {
             return;
         }
 
@@ -30,7 +30,7 @@ final class Laravel implements ArgumentHandler
             ->setArgument('--runner', '\Illuminate\Testing\ParallelRunner');
     }
 
-    private function isALaravelApplication(): bool
+    public static function isALaravelApplication(): bool
     {
         return class_exists('\App\Http\Kernel') && class_exists(ParallelRunner::class);
     }
