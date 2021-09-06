@@ -9,6 +9,7 @@ use ParaTest\Runners\PHPUnit\Options;
 use Pest\Parallel\Concerns\Arguments\ManagesArguments;
 use Pest\Parallel\Contracts\ArgumentHandler;
 use Pest\Parallel\Paratest\Runner;
+use Pest\Parallel\Support\Environment;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -20,7 +21,7 @@ final class Laravel implements ArgumentHandler
 
     private function editArguments(): void
     {
-        if (!static::isALaravelApplication()) {
+        if (!Environment::isALaravelApplication()) {
             return;
         }
 
@@ -28,11 +29,6 @@ final class Laravel implements ArgumentHandler
 
         $this->unsetArgument('--runner')
             ->setArgument('--runner', '\Illuminate\Testing\ParallelRunner');
-    }
-
-    public static function isALaravelApplication(): bool
-    {
-        return class_exists('\App\Http\Kernel') && class_exists(ParallelRunner::class);
     }
 
     private function setLaravelParallelRunner(): void

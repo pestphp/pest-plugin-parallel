@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Pest\Parallel\Support;
 
-use Pest\Parallel\Arguments\Laravel;
-
 /**
  * @internal
  */
@@ -18,7 +16,7 @@ final class ProcessEnvironmentHandler
     {
         $env = $this->default();
 
-        if (Laravel::isALaravelApplication()) {
+        if (Environment::isALaravelApplication()) {
             $env = array_merge($env, $this->laravel());
         }
 
