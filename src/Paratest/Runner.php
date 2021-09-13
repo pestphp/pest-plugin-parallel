@@ -84,7 +84,6 @@ final class Runner extends BaseRunner
         $availableTokens = range(1, $this->options->processes());
         while (count($this->running) > 0 || count($this->pending) > 0) {
             $this->fillRunQueue($availableTokens);
-            usleep(static::CYCLE_SLEEP);
 
             $availableTokens = [];
 
