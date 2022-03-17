@@ -55,6 +55,7 @@ final class Plugin implements HandlesArguments
 
     private function markTestSuiteAsParallelIfRequired(): void
     {
+        /* @phpstan-ignore-next-line */
         if ((int) Arr::get($_SERVER, 'PARATEST') === 1) {
             $_SERVER['PEST_PARALLEL'] = 1;
         }
