@@ -9,6 +9,7 @@ use Pest\Contracts\Plugins\HandlesArguments;
 use Pest\Parallel\Arguments\Colors;
 use Pest\Parallel\Arguments\Laravel;
 use Pest\Parallel\Arguments\Parallel;
+use Pest\Parallel\Contracts\ArgumentHandler;
 use Pest\Support\Arr;
 use Pest\TestSuite;
 
@@ -20,7 +21,7 @@ final class Plugin implements HandlesArguments
     /**
      * The argument handlers to run before executing the test command.
      *
-     * @var array<int, class-string>
+     * @var array<int, class-string<ArgumentHandler>>
      */
     private $handlers = [
         Parallel::class,
