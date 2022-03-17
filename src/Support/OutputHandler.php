@@ -47,11 +47,6 @@ final class OutputHandler
         }
     }
 
-    private function noTestsExecuted(string $content): void
-    {
-        $this->output->write(explode(PHP_EOL, $content)[0] . PHP_EOL);
-    }
-
     private function standardOutput(string $content): void
     {
         preg_match_all('/^\\n/m', $content, $matches, PREG_OFFSET_CAPTURE);

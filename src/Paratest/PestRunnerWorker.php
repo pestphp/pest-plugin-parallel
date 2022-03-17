@@ -66,7 +66,7 @@ final class PestRunnerWorker
      */
     public function __call(string $name, array $arguments)
     {
-        /* @phpstan-ignore-next-line  */
+        /* @phpstan-ignore-next-line */
         return $this->paratestRunner->$name(...$arguments);
     }
 
