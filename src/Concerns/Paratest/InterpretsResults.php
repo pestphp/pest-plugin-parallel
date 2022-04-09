@@ -24,7 +24,7 @@ trait InterpretsResults
      */
     private $interpreter = null;
 
-    private function getInterpreter(): LogInterpreter
+    protected function getInterpreter(): LogInterpreter
     {
         if ($this->interpreter === null) {
             $this->interpreter = new LogInterpreter();
@@ -36,7 +36,7 @@ trait InterpretsResults
     /**
      * Write the test output to a JUnit file.
      */
-    private function logToJUnit(Options $options): void
+    protected function logToJUnit(Options $options): void
     {
         if (($logJunit = $options->logJunit()) === null) {
             return;
@@ -51,7 +51,7 @@ trait InterpretsResults
     /**
      * @throws EmptyLogFileException
      */
-    private function addReaderForTest(ExecutableTest $test): void
+    protected function addReaderForTest(ExecutableTest $test): void
     {
         $this->getInterpreter()->addReader(new Reader($test->getTempFile()));
     }
@@ -59,7 +59,7 @@ trait InterpretsResults
     /**
      * Remove any previously stored test result logs.
      */
-    private function clearTestLogs(): void
+    protected function clearTestLogs(): void
     {
         foreach ($this->getInterpreter()->getReaders() as $reader) {
             $reader->removeLog();
@@ -69,7 +69,7 @@ trait InterpretsResults
     /**
      * The total number of recorded successful tests.
      */
-    private function testsPassed(): int
+    protected function testsPassed(): int
     {
         return $this->getInterpreter()->getTotalTests()
             - $this->testsFailed()
@@ -80,7 +80,7 @@ trait InterpretsResults
     /**
      * The total number of recorded test failures and errors combined.
      */
-    private function testsFailed(): int
+    protected function testsFailed(): int
     {
         return $this->getInterpreter()->getTotalFailures() + $this->getInterpreter()->getTotalErrors();
     }
@@ -88,7 +88,7 @@ trait InterpretsResults
     /**
      * The total number of recorded test warnings.
      */
-    private function testsWithWarnings(): int
+    protected function testsWithWarnings(): int
     {
         return $this->getInterpreter()->getTotalWarnings();
     }
@@ -96,7 +96,7 @@ trait InterpretsResults
     /**
      * The total number of recorded test skips.
      */
-    private function testsSkipped(): int
+    protected function testsSkipped(): int
     {
         return $this->getInterpreter()->getTotalSkipped();
     }
@@ -105,7 +105,7 @@ trait InterpretsResults
      * This is basically a slightly tweaked version of the recap provided by
      * Collision. We just alter it so that it understands Paratest.
      */
-    private function printRecap(OutputInterface $output, Duration $duration): void
+    protected function printRecap(OutputInterface $output, Duration $duration): void
     {
         $types = [
             TestResult::FAIL    => $this->testsFailed(),
