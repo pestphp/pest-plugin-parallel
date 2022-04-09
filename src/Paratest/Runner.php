@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pest\Parallel\Paratest;
 
 use ParaTest\Runners\PHPUnit\EmptyLogFileException;
+use Pest\Parallel\Support\PendingTestDetail;
 use PHPUnit\TextUI\TestRunner;
 
 /**
@@ -63,9 +64,9 @@ final class Runner extends BaseRunner
             && count($this->running) < $this->options->processes()
             && ($token = array_shift($availableTokens)) !== null
         ) {
-            $executableTest = array_shift($this->pending);
+            $pendingTestDetail = new PendingTestDetail(array_shift($this->pending), $this->options, $token);
 
-            $this->running[$token] = new PestRunnerWorker($this->output, $executableTest, $this->options, $token);
+            $this->running[$token] = new PestRunnerWorker($this->output, $pendingTestDetail);
             $this->running[$token]->run();
         }
     }

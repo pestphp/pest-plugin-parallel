@@ -10,6 +10,7 @@ use ParaTest\Runners\PHPUnit\Options;
 use ParaTest\Runners\PHPUnit\Worker\NullPhpunitPrinter;
 use ParaTest\Runners\PHPUnit\Worker\RunnerWorker;
 use Pest\Parallel\Support\OutputHandler;
+use Pest\Parallel\Support\PendingTestDetail;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -29,13 +30,13 @@ final class PestRunnerWorker
      */
     private $paratestRunner;
 
-    public function __construct(OutputInterface $output, ExecutableTest $executableTest, Options $options, int $token)
+    public function __construct(OutputInterface $output, PendingTestDetail $pendingTestDetail)
     {
         $this->output         = $output;
         $this->paratestRunner = new RunnerWorker(
-            $executableTest,
-            $options,
-            $token,
+            $pendingTestDetail->getExecutableTest(),
+            $pendingTestDetail->getOptions(),
+            $pendingTestDetail->getToken(),
             function (array $args, Options $options): array {
                 return static::editArgs($args, $options);
             }
