@@ -32,11 +32,10 @@ class PendingTestDetail
         ExecutableTest $executableTest,
         Options $options,
         int $token
-    )
-    {
+    ) {
         $this->executableTest = $executableTest;
-        $this->options = $options;
-        $this->token = $token;
+        $this->options        = $options;
+        $this->token          = $token;
     }
 
     public function getExecutableTest(): ExecutableTest

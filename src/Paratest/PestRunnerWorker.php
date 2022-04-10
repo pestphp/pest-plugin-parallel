@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Pest\Parallel\Paratest;
 
 use NunoMaduro\Collision\Adapters\Phpunit\Printer;
-use ParaTest\Runners\PHPUnit\ExecutableTest;
 use ParaTest\Runners\PHPUnit\Options;
 use ParaTest\Runners\PHPUnit\Worker\NullPhpunitPrinter;
 use ParaTest\Runners\PHPUnit\Worker\RunnerWorker;
+use Pest\Parallel\Contracts\RunningTest;
 use Pest\Parallel\Support\OutputHandler;
 use Pest\Parallel\Support\PendingTestDetail;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,7 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @mixin RunnerWorker
  */
-final class PestRunnerWorker
+final class PestRunnerWorker implements RunningTest
 {
     /**
      * @var OutputInterface
@@ -95,5 +95,10 @@ final class PestRunnerWorker
         ];
 
         return file_exists($paths[0]) ? $paths[0] : $paths[1];
+    }
+
+    public function isFinished(): bool
+    {
+        return ! $this->isRunning();
     }
 }
