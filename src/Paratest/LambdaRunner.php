@@ -6,7 +6,6 @@ use Aws\Result;
 use Closure;
 use GuzzleHttp\Promise\Each;
 use GuzzleHttp\Promise\PromiseInterface;
-use GuzzleHttp\Promise\Utils;
 use Hammerstone\Sidecar\Clients\LambdaClient;
 use Hammerstone\Sidecar\Deployment;
 use Hammerstone\Sidecar\Package;
@@ -14,11 +13,9 @@ use Hammerstone\Sidecar\Results\SettledResult;
 use Hammerstone\Sidecar\Sidecar;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Contracts\Foundation\Application;
-use NunoMaduro\Collision\Adapters\Phpunit\Printer;
 use ParaTest\Logging\JUnit\Reader;
 use ParaTest\Runners\PHPUnit\ExecutableTest;
 use ParaTest\Runners\PHPUnit\Options;
-use ParaTest\Runners\PHPUnit\Worker\NullPhpunitPrinter;
 use Pest\Parallel\Contracts\RunningTest;
 use Pest\Parallel\Serverless\Sidecar\Functions\RunTest;
 use Pest\Parallel\Support\OutputHandler;
@@ -26,8 +23,6 @@ use Pest\Parallel\Support\PendingTestDetail;
 use Pest\Parallel\Support\ProcessEnvironmentHandler;
 use PHPUnit\TextUI\TestRunner;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\PhpProcess;
-use function GuzzleHttp\Promise\queue;
 
 class LambdaRunner extends BaseRunner
 {
@@ -201,7 +196,9 @@ class LambdaRunner extends BaseRunner
                 return;
             }
 
-            yield $this->createRunningTest(new PendingTestDetail(array_shift($this->pending), $this->options, $token));
+            $this->running[$token] = $this->createRunningTest(new PendingTestDetail(array_shift($this->pending), $this->options, $token));
+
+            yield $this->running[$token];
         }
     }
 
@@ -245,10 +242,9 @@ class LambdaRunner extends BaseRunner
         return $pendingResult->rawPromise();
     }
 
-    protected function tearDownTest(Result $result, int $index): void
+    protected function tearDownTest(Result $result, int $token): void
     {
-        echo $index . PHP_EOL;
-        $test = $this->pending[$index];
+        $test = $this->running[$token];
         $result = (new SettledResult($result, new RunTest()))->throw();
 
         file_put_contents($test->getTempFile(), $result->body()['junit']);
@@ -261,5 +257,7 @@ class LambdaRunner extends BaseRunner
         if ($this->shouldStopOnFailure() && $this->getExitCode() > TestRunner::SUCCESS_EXIT) {
             $this->pending = [];
         }
+
+        unset($this->running[$token]);
     }
 }
