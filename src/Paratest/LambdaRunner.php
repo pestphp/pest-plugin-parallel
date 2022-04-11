@@ -197,22 +197,12 @@ class LambdaRunner extends BaseRunner
     protected function yieldPromises(array $availableTokens): iterable
     {
         foreach ($availableTokens as $token) {
+            if (count($this->pending) === 0) {
+                return;
+            }
+
             yield $this->createRunningTest(new PendingTestDetail(array_shift($this->pending), $this->options, $token));
         }
-    }
-
-    private function nextToken(): int
-    {
-        $availableTokens = range(1, $this->options->processes());
-        $token = $this->currentToken;
-
-        if ($token === array_values(array_flip($availableTokens))[0]) {
-            $this->currentToken = 0;
-        }
-
-        $this->currentToken++;
-
-        return $token;
     }
 
     protected function createRunningTest(PendingTestDetail $pendingTestDetail): PromiseInterface
@@ -257,7 +247,7 @@ class LambdaRunner extends BaseRunner
 
     protected function tearDownTest(Result $result, int $index): void
     {
-        echo $index;
+        echo $index . PHP_EOL;
         $test = $this->pending[$index];
         $result = (new SettledResult($result, new RunTest()))->throw();
 
