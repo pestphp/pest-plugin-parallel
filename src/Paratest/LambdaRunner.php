@@ -242,9 +242,9 @@ class LambdaRunner extends BaseRunner
         return $pendingResult->rawPromise();
     }
 
-    protected function tearDownTest(Result $result, int $token): void
+    protected function tearDownTest(Result $result, int $index): void
     {
-        $test = $this->running[$token];
+        $test = $this->running[$index + 1];
         $result = (new SettledResult($result, new RunTest()))->throw();
 
         file_put_contents($test->getTempFile(), $result->body()['junit']);
