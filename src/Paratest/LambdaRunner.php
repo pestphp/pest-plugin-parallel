@@ -258,6 +258,6 @@ class LambdaRunner extends BaseRunner
             $this->pending = [];
         }
 
-        unset($this->running[$token]);
+        unset($this->running[$index + 1]);
     }
 }
