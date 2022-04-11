@@ -66,9 +66,7 @@ class LambdaRunner extends BaseRunner
 
         // TODO: This is only needed because our account requires security tokens. We should remove it soon.
         $this->rebindLambdaClient();
-
         $this->ensureFunctionIsUploaded();
-
         $this->uploadPackages();
 
         Sidecar::warm([RunTest::class]);

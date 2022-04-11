@@ -14,6 +14,11 @@ do
   # Run the handler function from the script
   /opt/bin/php -f "$LAMBDA_TASK_ROOT/bootstrap.php" $EVENT_DATA
 
+  if [[ $(/opt/bin/php -f "$LAMBDA_TASK_ROOT/checkForWarming.php") -gt 0 ]]; then
+      curl -X POST "http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/$REQUEST_ID/response"  -d "{}"
+      break
+  fi
+
   # Get the test command
   TEST_COMMAND=$(/opt/bin/php -f "$LAMBDA_TASK_ROOT/getTestCommand.php" $EVENT_DATA)
 

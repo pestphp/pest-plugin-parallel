@@ -26,6 +26,10 @@ mkdir('/tmp/project');
 foreach ($payload['filesToDownload'] as $filename => $s3Url) {
     $tmpLocation = "/tmp/{$filename}";
 
+    if (file_exists($tmpLocation)) {
+        continue;
+    }
+
     copy($s3Url, $tmpLocation);
 
     $zip = new ZipArchive();
