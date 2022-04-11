@@ -222,7 +222,7 @@ class LambdaRunner extends BaseRunner
 
         $result = (new SettledResult($result, new RunTest()))->throw();
 
-        dd($result->body());
+        dump($result->body());
         $response = json_decode($result->body(), true);
 
         $this->outputHandler->handle($response['output']);
