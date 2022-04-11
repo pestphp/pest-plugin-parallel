@@ -16,7 +16,7 @@ $testCommand = $payload['testCommand'];
 $testCommand = array_map(function (string $commandPart) use ($localCwd, $tempFile) {
     $result = str_replace($localCwd, '/tmp/project', $commandPart);
     return str_replace(
-        substr($tempFile, 0, strrpos($tempFile, '/') + 1),
+        substr($tempFile, 0, strrpos($tempFile, '/')),
         '/tmp',
         $result
     );

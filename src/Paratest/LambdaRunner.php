@@ -233,7 +233,7 @@ class LambdaRunner extends BaseRunner
 
         $result = (new SettledResult($result, new RunTest()))->throw();
 
-        dd($result->logs());
+        dump($result->logs());
 
         $this->outputHandler->handle($result->body()['output']);
 
