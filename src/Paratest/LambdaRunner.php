@@ -23,7 +23,9 @@ use Pest\Parallel\Serverless\Sidecar\Functions\RunTest;
 use Pest\Parallel\Support\OutputHandler;
 use Pest\Parallel\Support\PendingTestDetail;
 use Pest\Parallel\Support\ProcessEnvironmentHandler;
+use PHPUnit\TextUI\TestRunner;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\PhpProcess;
 use function GuzzleHttp\Promise\queue;
 
 class LambdaRunner extends BaseRunner
@@ -170,18 +172,24 @@ class LambdaRunner extends BaseRunner
 
     protected function createTests(): void
     {
-        Each::ofLimit(
-            $this->yieldPromises(),
-            $this->options->processes(),
-            Closure::fromCallable([$this, 'tearDownTest']),
-            Closure::fromCallable([$this, 'tearDownTest'])
-        )->wait();
+        $availableTokens = range(1, $this->options->processes());
+
+        while (count($this->pending) > 0) {
+            Each::of(
+                $this->yieldPromises($availableTokens),
+                Closure::fromCallable([$this, 'tearDownTest']),
+                Closure::fromCallable([$this, 'tearDownTest'])
+            );
+        }
     }
 
-    protected function yieldPromises(): iterable
+    /**
+     * @param array<int, int> $availableTokens
+     */
+    protected function yieldPromises(array $availableTokens): iterable
     {
-        foreach ($this->pending as $test) {
-            yield $this->createRunningTest(new PendingTestDetail($test, $this->options, $this->nextToken()));
+        foreach ($availableTokens as $token) {
+            yield $this->createRunningTest(new PendingTestDetail(array_shift($this->pending), $this->options, $token));
         }
     }
 
@@ -249,12 +257,10 @@ class LambdaRunner extends BaseRunner
 
         $this->outputHandler->handle($result->body()['output']);
 
-        $exitCode = $result->body()['code'];
+        $this->exitcode = max($this->exitcode, $result->body()['code']);
 
-        if ($exitCode > $this->exitcode) {
-            $this->exitcode = $exitCode;
+        if ($this->shouldStopOnFailure() && $this->getExitCode() > TestRunner::SUCCESS_EXIT) {
+            $this->pending = [];
         }
-
-        unset($this->pending[$index]);
     }
 }
