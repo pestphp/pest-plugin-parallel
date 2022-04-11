@@ -142,6 +142,7 @@ class LambdaRunner extends BaseRunner
                 ->include('*')
                 ->exclude([
                     ".git/",
+                    ".idea/",
                     "vendor/",
                     "node_modules/",
                     "tests/",
