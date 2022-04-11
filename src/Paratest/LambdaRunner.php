@@ -53,7 +53,7 @@ class LambdaRunner extends BaseRunner
     {
         parent::__construct($options, $output);
 
-        $this->output = new OutputHandler($this->output);
+        $this->outputHandler = new OutputHandler($this->output);
     }
 
     protected function beforeRun(): void
