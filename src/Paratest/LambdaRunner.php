@@ -16,6 +16,7 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Contracts\Foundation\Application;
 use NunoMaduro\Collision\Adapters\Phpunit\Printer;
 use ParaTest\Logging\JUnit\Reader;
+use ParaTest\Runners\PHPUnit\ExecutableTest;
 use ParaTest\Runners\PHPUnit\Options;
 use ParaTest\Runners\PHPUnit\Worker\NullPhpunitPrinter;
 use Pest\Parallel\Contracts\RunningTest;
@@ -51,6 +52,13 @@ class LambdaRunner extends BaseRunner
      * @var OutputHandler
      */
     private $outputHandler;
+
+    /**
+     * Tests that are currently running.
+     *
+     * @var array<ExecutableTest>
+     */
+    protected $running = [];
 
     public function __construct(Options $options, OutputInterface $output)
     {
@@ -249,6 +257,7 @@ class LambdaRunner extends BaseRunner
 
     protected function tearDownTest(Result $result, int $index): void
     {
+        echo $index;
         $test = $this->pending[$index];
         $result = (new SettledResult($result, new RunTest()))->throw();
 
