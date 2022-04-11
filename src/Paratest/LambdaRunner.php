@@ -179,7 +179,7 @@ class LambdaRunner extends BaseRunner
                 $this->yieldPromises($availableTokens),
                 Closure::fromCallable([$this, 'tearDownTest']),
                 Closure::fromCallable([$this, 'tearDownTest'])
-            );
+            )->wait();
         }
     }
 
