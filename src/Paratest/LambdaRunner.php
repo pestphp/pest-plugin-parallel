@@ -196,9 +196,9 @@ class LambdaRunner extends BaseRunner
                 return;
             }
 
-            $this->running[$token] = $this->createRunningTest(new PendingTestDetail(array_shift($this->pending), $this->options, $token));
+            $this->running[$token] = array_shift($this->pending);
 
-            yield $this->running[$token];
+            yield $this->createRunningTest(new PendingTestDetail($this->running[$token], $this->options, $token));
         }
     }
 
