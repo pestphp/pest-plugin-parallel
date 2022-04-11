@@ -8,6 +8,8 @@ do
   # Get an event. The HTTP request will block until one is received
   EVENT_DATA=$(curl -sS -LD "$HEADERS" -X GET "http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/next")
 
+  echo $EVENT_DATA
+
   # Extract request ID by scraping response headers received above
   REQUEST_ID=$(grep -Fi Lambda-Runtime-Aws-Request-Id "$HEADERS" | tr -d '[:space:]' | cut -d: -f2)
 
@@ -21,6 +23,8 @@ do
 
   # Get the test command
   TEST_COMMAND=$(/opt/bin/php -f "$LAMBDA_TASK_ROOT/getTestCommand.php" $EVENT_DATA)
+
+  echo $TEST_COMMAND
 
   # Move into the project code as Pest needs to be executed from there
   cd "/tmp/project"
