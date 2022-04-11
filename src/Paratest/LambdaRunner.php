@@ -223,5 +223,11 @@ class LambdaRunner extends BaseRunner
         $result = (new SettledResult($result, new RunTest()))->throw();
 
         $this->outputHandler->handle($result->body()['output']);
+
+        $exitCode = $result->body()['code'];
+
+        if ($exitCode > $this->exitcode) {
+            $this->exitcode = $exitCode;
+        }
     }
 }
