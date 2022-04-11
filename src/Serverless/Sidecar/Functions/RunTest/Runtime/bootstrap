@@ -1,3 +1,32 @@
-#!/bin/bash
+#!/bin/sh
 
-echo "Hello World!"
+# Processing
+while true
+do
+  HEADERS="$(mktemp)"
+
+  # Get an event. The HTTP request will block until one is received
+  EVENT_DATA=$(curl -sS -LD "$HEADERS" -X GET "http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/next")
+
+  # Extract request ID by scraping response headers received above
+  REQUEST_ID=$(grep -Fi Lambda-Runtime-Aws-Request-Id "$HEADERS" | tr -d '[:space:]' | cut -d: -f2)
+
+  # Run the handler function from the script
+  /opt/bin/php -f "$LAMBDA_TASK_ROOT/bootstrap.php" $EVENT_DATA
+
+  # Get the test command
+  TEST_COMMAND=$(/opt/bin/php -f "$LAMBDA_TASK_ROOT/getTestCommand.php" $EVENT_DATA)
+
+  # Move into the project code as Pest needs to be executed from there
+  cd "/tmp/project"
+
+  chmod -R 777 .
+
+  PEST_OUTPUT=$(eval $TEST_COMMAND)
+  PEST_EXIT_CODE=$?
+
+  RESPONSE=$(/opt/bin/php -f "$LAMBDA_TASK_ROOT/buildResponse.php" $PEST_OUTPUT $PEST_EXIT_CODE)
+
+  # Send the response
+  curl -X POST "http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/$REQUEST_ID/response"  -d "$RESPONSE"
+done

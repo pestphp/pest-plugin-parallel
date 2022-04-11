@@ -8,7 +8,6 @@ use NunoMaduro\Collision\Adapters\Phpunit\Printer;
 use ParaTest\Runners\PHPUnit\Options;
 use ParaTest\Runners\PHPUnit\Worker\NullPhpunitPrinter;
 use ParaTest\Runners\PHPUnit\Worker\RunnerWorker;
-use Pest\Parallel\Contracts\RunningTest;
 use Pest\Parallel\Support\OutputHandler;
 use Pest\Parallel\Support\PendingTestDetail;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,7 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @mixin RunnerWorker
  */
-final class PestRunnerWorker implements RunningTest
+final class PestRunnerWorker
 {
     /**
      * @var OutputInterface

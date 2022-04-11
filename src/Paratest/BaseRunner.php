@@ -6,16 +6,11 @@ use ParaTest\Runners\PHPUnit\BaseRunner as ParatestRunner;
 use ParaTest\Runners\PHPUnit\Options;
 use Pest\Actions\InteractsWithPlugins;
 use Pest\Parallel\Concerns\Paratest\InterpretsResults;
-use Pest\Parallel\Contracts\RunningTest;
 use Pest\Parallel\Support\OutputHandler;
-use Pest\Parallel\Support\PendingTestDetail;
 use Pest\TestSuite;
 use SebastianBergmann\Timer\Timer;
 use Symfony\Component\Console\Output\OutputInterface;
 
-/**
- * @template TValue of \Pest\Parallel\Contracts\RunningTest
- */
 abstract class BaseRunner extends ParatestRunner
 {
     use InterpretsResults;
@@ -34,13 +29,6 @@ abstract class BaseRunner extends ParatestRunner
      */
     protected $timer;
 
-    /**
-     * Tests that are currently running.
-     *
-     * @var array<TValue>
-     */
-    protected $running = [];
-
     public function __construct(Options $options, OutputInterface $output)
     {
         parent::__construct($options, $output);
@@ -48,16 +36,6 @@ abstract class BaseRunner extends ParatestRunner
         $this->testSuite = TestSuite::getInstance();
         $this->timer     = new Timer();
     }
-
-    /**
-     * @return TValue
-     */
-    protected abstract function createRunningTest(PendingTestDetail $pendingTestDetail): RunningTest;
-
-    /**
-     * @param TValue $test
-     */
-    protected abstract function tearDownTest(RunningTest $test): void;
 
     /**
      * If there is any setup that should be performed
@@ -69,12 +47,12 @@ abstract class BaseRunner extends ParatestRunner
 
     }
 
+    protected abstract function createTests(): void;
+
     protected function doRun(): void
     {
         $this->timer->start();
-
         $this->beforeRun();
-
         $this->createTests();
     }
 
@@ -104,46 +82,6 @@ abstract class BaseRunner extends ParatestRunner
         }
 
         return $this->options->configuration()->phpunit()->stopOnFailure();
-    }
-
-    protected function createTests(): void
-    {
-        $availableTokens = range(1, $this->options->processes());
-
-        while (count($this->running) > 0 || count($this->pending) > 0) {
-            $this->fillRunQueue($availableTokens);
-
-            usleep(static::CYCLE_SLEEP);
-
-            $availableTokens = [];
-
-            $completedTests = array_filter($this->running, function (RunningTest $test): bool {
-                return $test->isFinished();
-            });
-
-            foreach ($completedTests as $token => $test) {
-                 $this->tearDownTest($test);
-
-                unset($this->running[$token]);
-                $availableTokens[] = $token;
-            }
-        }
-    }
-
-    /**
-     * @param array<int, int> $availableTokens
-     */
-    protected function fillRunQueue(array $availableTokens): void
-    {
-        while (
-            count($this->pending) > 0
-            && count($this->running) < $this->options->processes()
-            && ($token = array_shift($availableTokens)) !== null
-        ) {
-            $executableTest = array_shift($this->pending);
-
-            $this->running[$token] = $this->createRunningTest(new PendingTestDetail($executableTest, $this->options, $token));
-        }
     }
 
     protected function complete(): void
