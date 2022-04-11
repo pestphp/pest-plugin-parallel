@@ -152,6 +152,7 @@ class LambdaRunner extends BaseRunner
                     "vendor/",
                     "node_modules/",
                     "tests/",
+                    "storage/logs",
                     ".phpunit.result.cache",
                 ]),
             Package::make()
