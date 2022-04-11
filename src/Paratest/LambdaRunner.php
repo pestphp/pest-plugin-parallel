@@ -147,6 +147,8 @@ class LambdaRunner extends BaseRunner
             Package::make()->include(["{$this->testSuite->rootPath}/tests"]),
         ];
 
+        dd($packages[0]->files());
+
         array_walk($packages, function (Package $package) {
             $bucket = config('sidecar.aws_bucket');
 
