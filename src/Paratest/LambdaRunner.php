@@ -213,6 +213,16 @@ class LambdaRunner extends BaseRunner
         unset($args[$printerIndex]);
         unset($args[$printerIndex + 1]);
 
+        $tempFile = $pendingTestDetail->getExecutableTest()->getTempFile();
+        $tempFileForLambda = str_replace(
+            substr($tempFile, 0, strrpos($tempFile, '/')),
+            '/tmp/junit/',
+            $tempFile
+        );
+
+        $junitIndex = array_search('--log-junit', $args, true);
+        $args[$junitIndex + 1] = $tempFileForLambda;
+
         $pendingResult = Sidecar::executeAsync(RunTest::class, [
             'testCommand' => $args,
             'env' => array_merge(
@@ -220,7 +230,7 @@ class LambdaRunner extends BaseRunner
                 (new ProcessEnvironmentHandler($args))->getTokens()
             ),
             'localCwd' => $this->options->cwd(),
-            'tempFile' => $pendingTestDetail->getExecutableTest()->getTempFile(),
+            'tempFile' => $tempFileForLambda,
             'filesToDownload' => $this->uploadedFiles,
         ]);
 
@@ -233,7 +243,7 @@ class LambdaRunner extends BaseRunner
 
         $result = (new SettledResult($result, new RunTest()))->throw();
 
-        dump($result->logs());
+        dump($result->body());
 
         $this->outputHandler->handle($result->body()['output']);
 

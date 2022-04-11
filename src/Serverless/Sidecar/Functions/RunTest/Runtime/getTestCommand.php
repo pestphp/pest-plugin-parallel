@@ -14,12 +14,7 @@ $testCommand = $payload['testCommand'];
  * the location of the project on lambda.
  */
 $testCommand = array_map(function (string $commandPart) use ($localCwd, $tempFile) {
-    $result = str_replace($localCwd, '/tmp/project', $commandPart);
-    return str_replace(
-        substr($tempFile, 0, strrpos($tempFile, '/')),
-        '/tmp',
-        $result
-    );
+    return str_replace($localCwd, '/tmp/project', $commandPart);
 }, $testCommand);
 
 echo join(' ', $testCommand);
