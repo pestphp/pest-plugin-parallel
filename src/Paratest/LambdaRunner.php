@@ -141,6 +141,7 @@ class LambdaRunner extends BaseRunner
                 ->setBasePath($this->testSuite->rootPath)
                 ->include('*')
                 ->exclude([
+                    ".git/",
                     "vendor/",
                     "node_modules/",
                     "tests/",
@@ -153,8 +154,6 @@ class LambdaRunner extends BaseRunner
                 ->setBasePath($this->testSuite->rootPath)
                 ->include(["tests/"]),
         ];
-
-        dd($packages[0]->files());
 
         array_walk($packages, function (Package $package) {
             $bucket = config('sidecar.aws_bucket');
