@@ -15,6 +15,7 @@ use Hammerstone\Sidecar\Sidecar;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Contracts\Foundation\Application;
 use NunoMaduro\Collision\Adapters\Phpunit\Printer;
+use ParaTest\Logging\JUnit\Reader;
 use ParaTest\Runners\PHPUnit\Options;
 use ParaTest\Runners\PHPUnit\Worker\NullPhpunitPrinter;
 use Pest\Parallel\Contracts\RunningTest;
@@ -214,7 +215,7 @@ class LambdaRunner extends BaseRunner
         unset($args[$printerIndex + 1]);
 
         $tempFile = $pendingTestDetail->getExecutableTest()->getTempFile();
-        dd($tempFile);
+
         $tempFileForLambda = str_replace(
             substr($tempFile, 0, strrpos($tempFile, '/')),
             '/tmp/junit/',
@@ -240,9 +241,12 @@ class LambdaRunner extends BaseRunner
 
     protected function tearDownTest(Result $result, int $index): void
     {
+        $test = $this->pending[$index];
         $result = (new SettledResult($result, new RunTest()))->throw();
 
-        file_put_contents($this->pending[$index]->getTempFile(), $result->body()['junit']);
+        file_put_contents($test->getTempFile(), $result->body()['junit']);
+        $this->getInterpreter()->addReader(new Reader($test->getTempFile()));
+
         $this->outputHandler->handle($result->body()['output']);
 
         $exitCode = $result->body()['code'];
