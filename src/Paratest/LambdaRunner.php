@@ -214,6 +214,7 @@ class LambdaRunner extends BaseRunner
         unset($args[$printerIndex + 1]);
 
         $tempFile = $pendingTestDetail->getExecutableTest()->getTempFile();
+        dd($tempFile);
         $tempFileForLambda = str_replace(
             substr($tempFile, 0, strrpos($tempFile, '/')),
             '/tmp/junit/',
