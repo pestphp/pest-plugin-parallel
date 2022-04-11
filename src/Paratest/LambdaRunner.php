@@ -139,8 +139,14 @@ class LambdaRunner extends BaseRunner
     private function uploadPackages(): void
     {
         $packages = [
-            Package::make()->include([$this->testSuite->rootPath])->exclude(["{$this->testSuite->rootPath}/vendor"]),
+            Package::make()->include([$this->testSuite->rootPath])->exclude([
+                "{$this->testSuite->rootPath}/vendor",
+                "{$this->testSuite->rootPath}/node_modules",
+                "{$this->testSuite->rootPath}/tests",
+                "{$this->testSuite->rootPath}/.phpunit.result.cache",
+            ]),
             Package::make()->include(["{$this->testSuite->rootPath}/vendor"]),
+            Package::make()->include(["{$this->testSuite->rootPath}/tests"]),
         ];
 
         array_walk($packages, function (Package $package) {
