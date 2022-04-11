@@ -239,12 +239,9 @@ class LambdaRunner extends BaseRunner
 
     protected function tearDownTest(Result $result, int $index): void
     {
-        $test = $this->pending[$index];
-
         $result = (new SettledResult($result, new RunTest()))->throw();
 
-        dump($result->body());
-
+        file_put_contents($this->pending[$index]->getTempFile(), $result->body()['junit']);
         $this->outputHandler->handle($result->body()['output']);
 
         $exitCode = $result->body()['code'];
@@ -252,5 +249,7 @@ class LambdaRunner extends BaseRunner
         if ($exitCode > $this->exitcode) {
             $this->exitcode = $exitCode;
         }
+
+        unset($this->pending[$index]);
     }
 }
