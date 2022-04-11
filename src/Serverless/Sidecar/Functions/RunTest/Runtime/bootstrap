@@ -25,7 +25,7 @@ do
   PEST_OUTPUT=$(eval $TEST_COMMAND)
   PEST_EXIT_CODE=$?
 
-  RESPONSE=$(/opt/bin/php -f "$LAMBDA_TASK_ROOT/buildResponse.php" $PEST_OUTPUT $PEST_EXIT_CODE)
+  RESPONSE=$(/opt/bin/php -f "$LAMBDA_TASK_ROOT/buildResponse.php" "$PEST_OUTPUT" $PEST_EXIT_CODE)
 
   # Send the response
   curl -X POST "http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/$REQUEST_ID/response"  -d "$RESPONSE"
