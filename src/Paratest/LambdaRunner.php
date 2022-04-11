@@ -75,8 +75,6 @@ class LambdaRunner extends BaseRunner
         $this->ensureFunctionIsUploaded();
         $this->uploadPackages();
 
-        Sidecar::warm([RunTest::class]);
-
         $this->output->writeln(['', sprintf(
             '  <options=bold>Running Pest in parallel using %s lambda function%s</>',
             $this->options->processes(),
