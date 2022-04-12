@@ -26,6 +26,7 @@ mkdir('/tmp/project');
 foreach ($payload['filesToDownload'] as $filename => $s3Url) {
     $tmpLocation = "/tmp/{$filename}";
 
+    // TODO: This needs to be more robust. If two PRs are outstanding, this could be somebody else's code.
     if (file_exists($tmpLocation)) {
         continue;
     }
