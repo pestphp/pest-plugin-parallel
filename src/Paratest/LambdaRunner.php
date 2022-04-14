@@ -276,6 +276,8 @@ class LambdaRunner extends BaseRunner
         foreach ($tests as $index => $test) {
             $details = $result->body()[$index];
 
+            ray($details);
+
             file_put_contents($test->getTempFile(), $details['junit']);
             $this->getInterpreter()->addReader(new Reader($test->getTempFile()));
 
