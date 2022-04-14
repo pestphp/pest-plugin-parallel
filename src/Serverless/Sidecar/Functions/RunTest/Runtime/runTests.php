@@ -22,12 +22,17 @@ foreach ($commands as $test) {
     $output = [];
     $exitCode = 0;
 
-    exec("cd /tmp/project; '/opt/bin/php ' . {$test['command']}", $output, $exitCode);
+    $command = "cd /tmp/project; '/opt/bin/php ' . {$test['command']}";
+
+    exec($command, $output, $exitCode);
 
     $results[] = [
         'output' => $output,
         'code' => intval($exitCode),
-        'junit' => file_get_contents($test['tempFile'])
+        'junit' => file_get_contents($test['tempFile']),
+        'debug' => [
+            'command' => $command,
+        ],
     ];
 }
 
