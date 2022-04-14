@@ -132,7 +132,7 @@ class LambdaRunner extends BaseRunner
             ]);
 
             $middleware = Middleware::tap(function ($cmd, $req) {
-                ray($req);
+                ray($cmd);
                 dd('here');
             });
 
