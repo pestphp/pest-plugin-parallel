@@ -280,7 +280,7 @@ class LambdaRunner extends BaseRunner
             file_put_contents($test->getTempFile(), $details['junit']);
             $this->getInterpreter()->addReader(new Reader($test->getTempFile()));
 
-            $this->outputHandler->handle($details['output']);
+            $this->outputHandler->handle(join(PHP_EOL, $details['output']));
 
             $this->exitcode = max($this->exitcode, $details['code']);
         }
