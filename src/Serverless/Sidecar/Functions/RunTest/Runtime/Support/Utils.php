@@ -11,13 +11,20 @@ final class Utils
      */
     static private $s3;
 
+    public static function timeoutExpired(float $timeWhenStarting): bool
+    {
+        $timeout = self::payload()['timeout'] ?? 5000;
+
+        return (round(microtime(true) * 1000) - round($timeWhenStarting * 1000)) >= $timeout;
+    }
+
     public static function lambdaRoot(): string
     {
         return $_ENV['LAMBDA_TASK_ROOT'];
     }
 
     /**
-     * @return array{"tests": array{"testCommand": array<mixed>, "env": array<mixed>, "tempFile": string}, "localCwd": string, "filesToDownload": array<string>}
+     * @return array{"tests": array{"testCommand": array<mixed>, "env": array<mixed>, "tempFile": string}, "localCwd": string, "filesToDownload": array<string>. "timeout": int}
      */
     public static function payload(): array
     {

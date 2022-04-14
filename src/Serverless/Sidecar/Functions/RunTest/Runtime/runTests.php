@@ -6,6 +6,8 @@ use Pest\Parallel\Serverless\Sidecar\Functions\RunTest\Runtime\Support\Utils;
 
 $payload = Utils::payload();
 
+$timeWhenStarting = microtime(true);
+
 $commands = array_map(function (array $testDetails) use ($payload) {
     $command = str_replace(
         $payload['localCwd'],
@@ -19,6 +21,11 @@ $commands = array_map(function (array $testDetails) use ($payload) {
 $results = [];
 
 foreach ($commands as $test) {
+    if (Utils::timeoutExpired($timeWhenStarting)) {
+        $results[] = null;
+        break;
+    }
+
     $output = [];
     $exitCode = 0;
 

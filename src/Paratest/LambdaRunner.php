@@ -223,6 +223,7 @@ class LambdaRunner extends BaseRunner
             'tests' => $testDetails,
             'localCwd' => $this->options->cwd(),
             'filesToDownload' => $this->uploadedFiles,
+            'timeout' => 5000,
         ]);
 
         return $pendingResult->rawPromise();
@@ -273,6 +274,16 @@ class LambdaRunner extends BaseRunner
         foreach ($tests as $index => $test) {
             $details = $result->body()[$index];
 
+            /**
+             * If the timeout expired before running a test, the Lambda function
+             * won't have executed it. That being the case, we need to put it
+             * back onto the stack to be picked up by the next function.
+             */
+            if ($details === null) {
+                $this->pending[] = $test;
+                continue;
+            }
+
             file_put_contents($test->getTempFile(), $details['junit']);
             $this->getInterpreter()->addReader(new Reader($test->getTempFile()));
 
@@ -286,14 +297,10 @@ class LambdaRunner extends BaseRunner
         }
 
         unset($this->running[$token]);
-        $this->output->writeln("[{$token}] Lambda function finished.");
 
         if (count($this->pending) > 0) {
-            $this->output->writeln("[{$token}] Firing off a new lambda function...");
-
             foreach ($this->yieldPromises([$testIndex + 1]) as $promise) {
                 $promise->then(function (Result $result) use ($testIndex) {
-                    $this->output->writeln('This is definitely working.');
                     $this->tearDownTests($result, $testIndex);
                 });
             }
