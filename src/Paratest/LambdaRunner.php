@@ -2,6 +2,7 @@
 
 namespace Pest\Parallel\Paratest;
 
+use Aws\Middleware;
 use Aws\Result;
 use Closure;
 use GuzzleHttp\Promise\Each;
@@ -76,9 +77,7 @@ class LambdaRunner extends BaseRunner
         $this->ensureFunctionIsUploaded();
         $this->uploadPackages();
 
-        $this->output->writeln('Warming lambda...');
         Sidecar::warmSingle(new RunTest(), false);
-        $this->output->writeln('Lambda is warmed!');
 
         $this->output->writeln(['', sprintf(
             '  <options=bold>Running Pest in parallel using %s lambda function%s</>',
@@ -121,7 +120,7 @@ class LambdaRunner extends BaseRunner
          * instead.
          */
         $this->app->singleton(LambdaClient::class, function () {
-            return new LambdaClient([
+            $client = new LambdaClient([
                 'version' => 'latest',
                 'region' => config('sidecar.aws_region'),
                 'credentials' => [
@@ -129,7 +128,17 @@ class LambdaRunner extends BaseRunner
                     'secret' => config('sidecar.aws_secret'),
                     'token' => $_ENV['AWS_TOKEN'] ?? ''
                 ],
+                'handler'
             ]);
+
+            $middleware = Middleware::tap(function ($cmd, $req) {
+                ray($req);
+                dd('here');
+            });
+
+            $client->getHandlerList()->appendInit($middleware, 'stagger-request');
+
+            return $client;
         });
     }
 
@@ -282,9 +291,6 @@ class LambdaRunner extends BaseRunner
         $token = $testIndex + 1;
         $tests = $this->running[$token];
         $result = (new SettledResult($result, new RunTest()))->throw();
-
-        ray($result->body());
-        ray($result->logs());
 
         foreach ($tests as $index => $test) {
             $details = $result->body()[$index];
