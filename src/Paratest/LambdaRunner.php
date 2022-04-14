@@ -137,8 +137,19 @@ class LambdaRunner extends BaseRunner
                     return;
                 }
 
-                ray($cmd, $req);
-                dd('here');
+                $payload = json_decode($cmd['Payload'], true);
+
+                if ($payload === false) {
+                    return;
+                }
+
+                $token = $payload['token'] ?? 1;
+
+                if ($token === 1) {
+                    return;
+                }
+
+                usleep(1250 * $token);
             });
 
             $client->getHandlerList()->appendInit($middleware, 'stagger-request');
@@ -235,11 +246,11 @@ class LambdaRunner extends BaseRunner
                 return new PendingTestDetail($test, $this->options, $token);
             }, $this->running[$token]);
 
-            yield $this->createRunningTests(...$pendingTestDetails);
+            yield $this->createRunningTests($token, ...$pendingTestDetails);
         }
     }
 
-    protected function createRunningTests(PendingTestDetail ...$pendingTestDetails): PromiseInterface
+    protected function createRunningTests(int $token, PendingTestDetail ...$pendingTestDetails): PromiseInterface
     {
         $testDetails = array_map(function (PendingTestDetail $pendingTestDetail) {
             return $this->createRunningTest($pendingTestDetail);
@@ -250,6 +261,7 @@ class LambdaRunner extends BaseRunner
             'localCwd' => $this->options->cwd(),
             'filesToDownload' => $this->uploadedFiles,
             'timeout' => 5000,
+            'token' => $token,
         ]);
 
         return $pendingResult->rawPromise();
