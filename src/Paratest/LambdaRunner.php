@@ -175,6 +175,13 @@ class LambdaRunner extends BaseRunner
 
     protected function createTests(): void
     {
+        /**
+         * Feature tests tend to take longer than unit tests, so if all feature
+         * tests run together, that will increase the duration of the suite.
+         * To help avoid that, we'll randomise the test order.
+         */
+        shuffle($this->pending);
+
         $availableTokens = range(1, $this->options->processes());
 
         Each::of(
@@ -189,21 +196,20 @@ class LambdaRunner extends BaseRunner
      */
     protected function yieldPromises(array $availableTokens): iterable
     {
-        foreach ($availableTokens as $token) {
-            if (count($this->pending) === 0) {
-                return;
-            }
+        $chunkedTests = array_chunk(
+            $this->pending,
+            intval(ceil(count($this->pending) / $availableTokens)),
+            true
+        );
 
-            /**
-             * In order to maximise efficiency of a lambda function,
-             * we'll run multiple test files at once. So we'll
-             * shift off a few test files to run.
-             */
-            $this->running[$token] = array_filter([
-                array_shift($this->pending),
-                array_shift($this->pending),
-                array_shift($this->pending),
-            ]);
+        foreach ($chunkedTests as $chunkIndex => $tests) {
+            $token = $availableTokens[$chunkIndex];
+
+            $this->running[$token] = $tests;
+
+            foreach ($tests as $testIndex => $test) {
+                unset($this->pending[$testIndex]);
+            }
 
             $pendingTestDetails = array_map(function (ExecutableTest $test) use ($token) {
                 return new PendingTestDetail($test, $this->options, $token);
@@ -274,16 +280,6 @@ class LambdaRunner extends BaseRunner
         foreach ($tests as $index => $test) {
             $details = $result->body()[$index];
 
-            /**
-             * If the timeout expired before running a test, the Lambda function
-             * won't have executed it. That being the case, we need to put it
-             * back onto the stack to be picked up by the next function.
-             */
-            if ($details === null) {
-                $this->pending[] = $test;
-                continue;
-            }
-
             file_put_contents($test->getTempFile(), $details['junit']);
             $this->getInterpreter()->addReader(new Reader($test->getTempFile()));
 
@@ -297,13 +293,5 @@ class LambdaRunner extends BaseRunner
         }
 
         unset($this->running[$token]);
-
-        if (count($this->pending) > 0) {
-            foreach ($this->yieldPromises([$testIndex + 1]) as $promise) {
-                $promise->then(function (Result $result) use ($testIndex) {
-                    $this->tearDownTests($result, $testIndex);
-                });
-            }
-        }
     }
 }

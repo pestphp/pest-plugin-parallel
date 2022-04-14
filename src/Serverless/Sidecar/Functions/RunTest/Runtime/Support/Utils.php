@@ -6,18 +6,6 @@ use Aws\S3\S3Client;
 
 final class Utils
 {
-    /**
-     * @var S3Client
-     */
-    static private $s3;
-
-    public static function timeoutExpired(float $timeWhenStarting): bool
-    {
-        $timeout = self::payload()['timeout'] ?? 5000;
-
-        return (round(microtime(true) * 1000) - round($timeWhenStarting * 1000)) >= $timeout;
-    }
-
     public static function lambdaRoot(): string
     {
         return $_ENV['LAMBDA_TASK_ROOT'];
