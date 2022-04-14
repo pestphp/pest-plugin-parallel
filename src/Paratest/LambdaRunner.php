@@ -293,6 +293,7 @@ class LambdaRunner extends BaseRunner
 
             foreach ($this->yieldPromises([$testIndex + 1]) as $promise) {
                 $promise->then(function (Result $result) use ($testIndex) {
+                    $this->output->writeln('This is definitely working.');
                     $this->tearDownTests($result, $testIndex);
                 });
             }
