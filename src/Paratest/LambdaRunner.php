@@ -121,7 +121,7 @@ class LambdaRunner extends BaseRunner
          * instead.
          */
         $this->app->singleton(LambdaClient::class, function () {
-            $client = new LambdaClient([
+            return new LambdaClient([
                 'version' => 'latest',
                 'region' => config('sidecar.aws_region'),
                 'credentials' => [
@@ -129,32 +129,7 @@ class LambdaRunner extends BaseRunner
                     'secret' => config('sidecar.aws_secret'),
                     'token' => $_ENV['AWS_TOKEN'] ?? ''
                 ],
-                'handler'
             ]);
-
-            $middleware = Middleware::tap(function (Command $cmd, $req) {
-                if ($cmd->getName() !== 'Invoke') {
-                    return;
-                }
-
-                $payload = json_decode($cmd['Payload'], true);
-
-                if ($payload === false) {
-                    return;
-                }
-
-                $token = $payload['token'] ?? 1;
-
-                if ($token === 1) {
-                    return;
-                }
-
-                usleep(1250 * $token);
-            });
-
-            $client->getHandlerList()->appendInit($middleware, 'stagger-request');
-
-            return $client;
         });
     }
 
