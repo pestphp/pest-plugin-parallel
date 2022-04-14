@@ -55,9 +55,4 @@ final class RunTest extends LambdaFunction
             'LD_LIBRARY_PATH' => '/opt/lib:/opt/lib/bref:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib',
         ];
     }
-
-    public function warmingConfig(): WarmingConfig
-    {
-        return WarmingConfig::instances(2);
-    }
 }
