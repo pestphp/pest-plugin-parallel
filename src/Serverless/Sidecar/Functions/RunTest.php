@@ -34,8 +34,9 @@ final class RunTest extends LambdaFunction
     public function layers(): array
     {
         return [
-            'arn:aws:lambda:eu-west-1:674573131681:layer:php-81al2-pcov:1',
-            'arn:aws:lambda:eu-west-1:674573131681:layer:aws-php-sdk-3_219_0:1'
+            //'arn:aws:lambda:eu-west-1:674573131681:layer:php-81al2-pcov:1',
+            'arn:aws:lambda:eu-west-1:674573131681:layer:php-81al2:1',
+            'arn:aws:lambda:eu-west-1:674573131681:layer:aws-php-sdk-3_219_0:1',
         ];
     }
 
