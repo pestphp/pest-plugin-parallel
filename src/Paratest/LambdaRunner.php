@@ -49,9 +49,10 @@ class LambdaRunner extends BaseRunner
     private $outputHandler;
 
     /**
-     * Tests that are currently running.
+     * Tests that are currently running. Note that each
+     * lambda function can be given multiple tests to run.
      *
-     * @var array<ExecutableTest>
+     * @var array<int, array<ExecutableTest>>
      */
     protected $running = [];
 
@@ -179,8 +180,8 @@ class LambdaRunner extends BaseRunner
         while (count($this->pending) > 0) {
             Each::of(
                 $this->yieldPromises($availableTokens),
-                Closure::fromCallable([$this, 'tearDownTest']),
-                Closure::fromCallable([$this, 'tearDownTest'])
+                Closure::fromCallable([$this, 'tearDownTests']),
+                Closure::fromCallable([$this, 'tearDownTests'])
             )->wait();
         }
     }
@@ -195,20 +196,48 @@ class LambdaRunner extends BaseRunner
                 return;
             }
 
-            $this->running[$token] = array_shift($this->pending);
+            /**
+             * In order to maximise efficiency of a lambda function,
+             * we'll run multiple test files at once. So we'll
+             * shift off a few test files to run.
+             */
+            $this->running[$token] = array_filter([
+                array_shift($this->pending),
+                array_shift($this->pending),
+                array_shift($this->pending),
+            ]);
 
-            yield $this->createRunningTest(new PendingTestDetail($this->running[$token], $this->options, $token));
+            $pendingTestDetails = array_map(function (ExecutableTest $test) use ($token) {
+                return new PendingTestDetail($test, $this->options, $token);
+            }, $this->running[$token]);
+
+            yield $this->createRunningTests(...$pendingTestDetails);
         }
     }
 
-    protected function createRunningTest(PendingTestDetail $pendingTestDetail): PromiseInterface
+    protected function createRunningTests(PendingTestDetail ...$pendingTestDetails): PromiseInterface
+    {
+        $testDetails = array_map(function (PendingTestDetail $pendingTestDetail) {
+            return $this->createRunningTest($pendingTestDetail);
+        }, $pendingTestDetails);
+
+        $pendingResult = Sidecar::executeAsync(RunTest::class, [
+            'tests' => $testDetails,
+            'localCwd' => $this->options->cwd(),
+            'filesToDownload' => $this->uploadedFiles,
+        ]);
+
+        return $pendingResult->rawPromise();
+    }
+
+    protected function createRunningTest(PendingTestDetail $pendingTestDetail): array
     {
         $passthruPhp = $this->options->passthruPhp() ?: [];
 
         $testCommand = $pendingTestDetail->getExecutableTest()->commandArguments(
             'vendor/bin/pest',
             $this->options->filtered(),
-            dd($this->options->passthru()),
+            $this->options->passthru(),
         );
 
         $args = array_merge($passthruPhp, $testCommand);
@@ -227,36 +256,39 @@ class LambdaRunner extends BaseRunner
         $junitIndex = array_search('--log-junit', $args, true);
         $args[$junitIndex + 1] = $tempFileForLambda;
 
-        $pendingResult = Sidecar::executeAsync(RunTest::class, [
+        return [
             'testCommand' => $args,
             'env' => array_merge(
                 $this->options->fillEnvWithTokens($pendingTestDetail->getToken()),
-                (new ProcessEnvironmentHandler($args))->getTokens()
+                (new ProcessEnvironmentHandler())->getTokens()
             ),
-            'localCwd' => $this->options->cwd(),
             'tempFile' => $tempFileForLambda,
-            'filesToDownload' => $this->uploadedFiles,
-        ]);
-
-        return $pendingResult->rawPromise();
+        ];
     }
 
-    protected function tearDownTest(Result $result, int $index): void
+    protected function tearDownTests(Result $result, int $testIndex): void
     {
-        $test = $this->running[$index + 1];
+        $tests = $this->running[$testIndex + 1];
         $result = (new SettledResult($result, new RunTest()))->throw();
 
-        file_put_contents($test->getTempFile(), $result->body()['junit']);
-        $this->getInterpreter()->addReader(new Reader($test->getTempFile()));
+        ray($result->logs());
+        ray($result->body());
 
-        $this->outputHandler->handle($result->body()['output']);
+        foreach ($tests as $index => $test) {
+            $details = $result->body()[$index];
 
-        $this->exitcode = max($this->exitcode, $result->body()['code']);
+            file_put_contents($test->getTempFile(), $details['junit']);
+            $this->getInterpreter()->addReader(new Reader($test->getTempFile()));
+
+            $this->outputHandler->handle($details['output']);
+
+            $this->exitcode = max($this->exitcode, $details['code']);
+        }
 
         if ($this->shouldStopOnFailure() && $this->getExitCode() > TestRunner::SUCCESS_EXIT) {
             $this->pending = [];
         }
 
-        unset($this->running[$index + 1]);
+        unset($this->running[$testIndex + 1]);
     }
 }

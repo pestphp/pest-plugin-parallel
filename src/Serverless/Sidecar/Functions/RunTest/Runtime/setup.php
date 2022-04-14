@@ -2,28 +2,17 @@
 
 declare(strict_types=1);
 
-use Aws\S3\S3Client;
+use Pest\Parallel\Serverless\Sidecar\Functions\RunTest\Runtime\Support\Utils;
 
-$lambdaRoot = $_ENV['LAMBDA_TASK_ROOT'];
-
-$payload = json_decode($_SERVER['argv'][1], true);
-
-$s3Client = new S3Client([
-    'version' => 'latest',
-    'region' => $_ENV['AWS_REGION'],
-    'credentials' => [
-        'key' => $_ENV['AWS_ACCESS_KEY_ID'],
-        'secret' => $_ENV['AWS_SECRET_ACCESS_KEY'],
-        'token' => $_ENV['AWS_SESSION_TOKEN'],
-    ],
-]);
-
-$s3Client->registerStreamWrapper();
+/**
+ * We'll call the s3 method to register a new stream wrapper.
+ */
+Utils::s3();
 
 mkdir('/tmp/sidecar');
 mkdir('/tmp/project');
 
-foreach ($payload['filesToDownload'] as $filename => $s3Url) {
+foreach (Utils::payload()['filesToDownload'] as $filename => $s3Url) {
     $tmpLocation = "/tmp/{$filename}";
 
     // TODO: This needs to be more robust. If two PRs are outstanding, this could be somebody else's code.
@@ -38,3 +27,4 @@ foreach ($payload['filesToDownload'] as $filename => $s3Url) {
     $zip->extractTo('/tmp/project');
     $zip->close();
 }
+
