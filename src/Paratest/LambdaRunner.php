@@ -2,6 +2,7 @@
 
 namespace Pest\Parallel\Paratest;
 
+use Aws\Command;
 use Aws\Middleware;
 use Aws\Result;
 use Closure;
@@ -131,8 +132,12 @@ class LambdaRunner extends BaseRunner
                 'handler'
             ]);
 
-            $middleware = Middleware::tap(function ($cmd, $req) {
-                ray($cmd);
+            $middleware = Middleware::tap(function (Command $cmd, $req) {
+                if ($cmd->getName() !== 'InvokeAsync') {
+                    return;
+                }
+
+                ray($cmd, $req);
                 dd('here');
             });
 
