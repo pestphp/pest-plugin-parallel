@@ -203,13 +203,12 @@ class LambdaRunner extends BaseRunner
 
     protected function createRunningTest(PendingTestDetail $pendingTestDetail): PromiseInterface
     {
-        $passthruPhp = $this->options->passthruPhp() ? $this->options->passthruPhp() : [];
+        $passthruPhp = $this->options->passthruPhp() ?: [];
 
-        dd($this->options->filtered());
         $testCommand = $pendingTestDetail->getExecutableTest()->commandArguments(
             'vendor/bin/pest',
             $this->options->filtered(),
-            $this->options->passthru(),
+            dd($this->options->passthru()),
         );
 
         $args = array_merge($passthruPhp, $testCommand);
