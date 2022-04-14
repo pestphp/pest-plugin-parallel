@@ -5,7 +5,6 @@ namespace Pest\Parallel\Serverless\Sidecar\Functions;
 use Hammerstone\Sidecar\LambdaFunction;
 use Hammerstone\Sidecar\Package;
 use Hammerstone\Sidecar\Runtime;
-use Hammerstone\Sidecar\WarmingConfig;
 use Pest\TestSuite;
 
 final class RunTest extends LambdaFunction

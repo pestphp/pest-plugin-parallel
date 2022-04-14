@@ -16,6 +16,11 @@ final class Utils
         return $_ENV['LAMBDA_TASK_ROOT'];
     }
 
+    public static function isWarming(): bool
+    {
+        return json_decode($_SERVER['argv'][1], true)['warming'] ?? false;
+    }
+
     /**
      * @return array{"tests": array{"testCommand": array<mixed>, "env": array<mixed>, "tempFile": string}, "localCwd": string, "filesToDownload": array<string>. "timeout": int}
      */

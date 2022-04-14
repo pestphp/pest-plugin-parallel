@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 use Pest\Parallel\Serverless\Sidecar\Functions\RunTest\Runtime\Support\Utils;
 
+if (Utils::isWarming()) {
+    echo 'false';
+    exit;
+}
+
 /**
  * We'll call the s3 method to register a new stream wrapper.
  */
@@ -28,3 +33,4 @@ foreach (Utils::payload()['filesToDownload'] as $filename => $s3Url) {
     $zip->close();
 }
 
+echo 'true';
