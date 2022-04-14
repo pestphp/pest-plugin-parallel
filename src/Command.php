@@ -19,7 +19,7 @@ final class Command
     {
         $argv = InteractsWithPlugins::handleArguments($argv);
 
-        //$argv[] = '--runner=' . LambdaRunner::class;
+        $argv[] = '--runner=' . LambdaRunner::class;
 
         $testSuite = TestSuite::getInstance();
 
