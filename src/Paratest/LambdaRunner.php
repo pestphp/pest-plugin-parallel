@@ -178,11 +178,13 @@ class LambdaRunner extends BaseRunner
         $availableTokens = range(1, $this->options->processes());
 
         while (count($this->pending) > 0) {
+            $this->output->writeln('Preparing the next batch of tests...');
             Each::of(
                 $this->yieldPromises($availableTokens),
                 Closure::fromCallable([$this, 'tearDownTests']),
                 Closure::fromCallable([$this, 'tearDownTests'])
             )->wait();
+            $this->output->writeln('Batch complete.');
         }
     }
 
