@@ -221,11 +221,11 @@ class LambdaRunner extends BaseRunner
                 return new PendingTestDetail($test, $this->options, $token);
             }, $this->running[$token]);
 
-            yield $this->createRunningTests($token, ...$pendingTestDetails);
+            yield $this->createRunningTests(...$pendingTestDetails);
         }
     }
 
-    protected function createRunningTests(int $token, PendingTestDetail ...$pendingTestDetails): PromiseInterface
+    protected function createRunningTests(PendingTestDetail ...$pendingTestDetails): PromiseInterface
     {
         $testDetails = array_map(function (PendingTestDetail $pendingTestDetail) {
             return $this->createRunningTest($pendingTestDetail);
@@ -235,8 +235,6 @@ class LambdaRunner extends BaseRunner
             'tests' => $testDetails,
             'localCwd' => $this->options->cwd(),
             'filesToDownload' => $this->uploadedFiles,
-            'timeout' => 5000,
-            'token' => $token,
         ]);
 
         return $pendingResult->rawPromise();
