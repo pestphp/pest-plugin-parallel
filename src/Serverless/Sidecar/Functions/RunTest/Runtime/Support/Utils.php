@@ -6,6 +6,11 @@ use Aws\S3\S3Client;
 
 final class Utils
 {
+    /**
+     * @var S3Client|null
+     */
+    private static $s3 = null;
+
     public static function lambdaRoot(): string
     {
         return $_ENV['LAMBDA_TASK_ROOT'];
