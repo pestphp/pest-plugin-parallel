@@ -205,6 +205,7 @@ class LambdaRunner extends BaseRunner
     {
         $passthruPhp = $this->options->passthruPhp() ? $this->options->passthruPhp() : [];
 
+        dd($this->options->filtered());
         $testCommand = $pendingTestDetail->getExecutableTest()->commandArguments(
             'vendor/bin/pest',
             $this->options->filtered(),
