@@ -280,6 +280,9 @@ class LambdaRunner extends BaseRunner
         $tests = $this->running[$token];
         $result = (new SettledResult($result, new RunTest()))->throw();
 
+        ray($result->body());
+        ray($result->logs());
+
         foreach ($tests as $index => $test) {
             $details = $result->body()[$index];
 
