@@ -177,15 +177,11 @@ class LambdaRunner extends BaseRunner
     {
         $availableTokens = range(1, $this->options->processes());
 
-        while (count($this->pending) > 0) {
-            $this->output->writeln('Preparing the next batch of tests...');
-            Each::of(
-                $this->yieldPromises($availableTokens),
-                Closure::fromCallable([$this, 'tearDownTests']),
-                Closure::fromCallable([$this, 'tearDownTests'])
-            )->wait();
-            $this->output->writeln('Batch complete.');
-        }
+        Each::of(
+            $this->yieldPromises($availableTokens),
+            Closure::fromCallable([$this, 'tearDownTests']),
+            Closure::fromCallable([$this, 'tearDownTests'])
+        )->wait();
     }
 
     /**
@@ -270,15 +266,12 @@ class LambdaRunner extends BaseRunner
 
     protected function tearDownTests(Result $result, int $testIndex): void
     {
-        $tests = $this->running[$testIndex + 1];
+        $token = $testIndex + 1;
+        $tests = $this->running[$token];
         $result = (new SettledResult($result, new RunTest()))->throw();
-
-        ray($result->logs());
 
         foreach ($tests as $index => $test) {
             $details = $result->body()[$index];
-
-            ray($details);
 
             file_put_contents($test->getTempFile(), $details['junit']);
             $this->getInterpreter()->addReader(new Reader($test->getTempFile()));
@@ -292,6 +285,17 @@ class LambdaRunner extends BaseRunner
             $this->pending = [];
         }
 
-        unset($this->running[$testIndex + 1]);
+        unset($this->running[$token]);
+        $this->output->writeln("[{$token}] Lambda function finished.");
+
+        if (count($this->pending) > 0) {
+            $this->output->writeln("[{$token}] Firing off a new lambda function...");
+
+            foreach ($this->yieldPromises([$testIndex + 1]) as $promise) {
+                $promise->then(function (Result $result) use ($testIndex) {
+                    $this->tearDownTests($result, $testIndex);
+                });
+            }
+        }
     }
 }
