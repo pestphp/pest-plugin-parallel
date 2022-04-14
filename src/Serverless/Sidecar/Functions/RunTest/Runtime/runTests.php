@@ -22,7 +22,7 @@ foreach ($commands as $test) {
     $output = [];
     $exitCode = 0;
 
-    exec("cd /tmp/project; {$test['command']}", $output, $exitCode);
+    exec("cd /tmp/project; '/opt/bin/php ' . {$test['command']}", $output, $exitCode);
 
     $results[] = [
         'output' => $output,
