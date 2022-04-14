@@ -198,7 +198,7 @@ class LambdaRunner extends BaseRunner
     {
         $chunkedTests = array_chunk(
             $this->pending,
-            intval(ceil(count($this->pending) / $availableTokens)),
+            intval(ceil(count($this->pending) / count($availableTokens))),
             true
         );
 
