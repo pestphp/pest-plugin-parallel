@@ -211,6 +211,9 @@ class LambdaRunner extends BaseRunner
                 unset($this->pending[$testIndex]);
             }
 
+            $chunkTestCount = count($tests);
+            $this->output->writeln("[$token] {$chunkTestCount} test files will be run...");
+
             $pendingTestDetails = array_map(function (ExecutableTest $test) use ($token) {
                 return new PendingTestDetail($test, $this->options, $token);
             }, $this->running[$token]);
