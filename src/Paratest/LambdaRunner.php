@@ -133,12 +133,7 @@ class LambdaRunner extends BaseRunner
             ]);
 
             $middleware = Middleware::tap(function (Command $cmd, $req) {
-                if ($cmd->getName() !== 'InvokeAsync') {
-                    return;
-                }
-
-                ray($cmd, $req);
-                dd('here');
+                ray($cmd->getName());
             });
 
             $client->getHandlerList()->appendInit($middleware, 'stagger-request');
