@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [v1.1.0 (2022-05-06)](https://github.com/pestphp/pest-plugin-parallel/compare/v1.0.0...v1.1.0)
+
+### Fixed
+- Fix test coverage ([#12](https://github.com/pestphp/pest-plugin-parallel/pull/12))
+- Resolve static analysis warnings ([#14](https://github.com/pestphp/pest-plugin-parallel/pull/14))
+
 ## [v0.3.1 (2021-09-06)](https://github.com/pestphp/pest-plugin-parallel/compare/v0.3.0...v0.3.1)
 ### Fixed
 - `stopOnError` will now respectfully stop the test suite ([#9](https://github.com/pestphp/pest-plugin-parallel/pull/9))
