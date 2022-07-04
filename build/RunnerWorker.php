@@ -41,8 +41,8 @@ final class RunnerWorker
         $this->executableTest = $executableTest;
 
         $phpFinder = new PhpExecutableFinder();
-        $args      = [$phpFinder->find(false)];
-        $args      = array_merge($args, $phpFinder->findArguments());
+        $args = [$phpFinder->find(false)];
+        $args = array_merge($args, $phpFinder->findArguments());
 
         if (($passthruPhp = $options->passthruPhp()) !== null) {
             $args = array_merge($args, $passthruPhp);
@@ -103,7 +103,7 @@ final class RunnerWorker
      * cases in single --filter arguments so it's better to show error regarding that to user
      * and propose him to decrease max batch size.
      *
-     * @param string $cmd Command line
+     * @param  string  $cmd Command line
      *
      * @throws RuntimeException on too long command line
      *
@@ -116,7 +116,7 @@ final class RunnerWorker
         }
 
         // symfony's process wrapper
-        $cmd = 'cmd /V:ON /E:ON /C "(' . $cmd . ')';
+        $cmd = 'cmd /V:ON /E:ON /C "('.$cmd.')';
         if (strlen($cmd) > 32767) {
             throw new RuntimeException('Command line is too long, try to decrease max batch size');
         }

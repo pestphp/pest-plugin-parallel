@@ -4,20 +4,18 @@ declare(strict_types=1);
 
 namespace ParaTest\Runners\PHPUnit;
 
+use function array_reverse;
+use function assert;
+use function file_put_contents;
+use function mt_srand;
 use ParaTest\Coverage\CoverageMerger;
 use ParaTest\Coverage\CoverageReporter;
 use ParaTest\Logging\JUnit\Writer;
 use ParaTest\Logging\LogInterpreter;
 use Pest\Parallel\Paratest\ExecutablePestTest;
 use SebastianBergmann\Timer\Timer;
-use Symfony\Component\Console\Output\OutputInterface;
-
-use function array_reverse;
-use function assert;
-use function file_put_contents;
-use function mt_srand;
 use function shuffle;
-use function sprintf;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * This is a copy of Paratest's BaseRunner with a few minor tweaks:
@@ -67,8 +65,8 @@ abstract class BaseRunner implements RunnerInterface
 
     public function __construct(Options $options, OutputInterface $output)
     {
-        $this->options     = $options;
-        $this->output      = $output;
+        $this->options = $options;
+        $this->output = $output;
         $this->interpreter = new LogInterpreter();
 
         if (! $this->options->hasCoverage()) {

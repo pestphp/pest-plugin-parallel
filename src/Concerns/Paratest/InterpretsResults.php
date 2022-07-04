@@ -121,7 +121,7 @@ trait InterpretsResults
                 continue;
             }
 
-            $color   = TestResult::makeColor($type);
+            $color = TestResult::makeColor($type);
             $tests[] = "<fg=$color;options=bold>$number $type</>";
         }
 
@@ -136,13 +136,13 @@ trait InterpretsResults
         $timeElapsed = number_format($duration->asSeconds(), 2, '.', '');
 
         $output->writeln([
-                '',
-                sprintf(
-                    '  <fg=white;options=bold>Time:   </><fg=default>%ss</>',
-                    $timeElapsed
-                ),
-                '',
-            ]
+            '',
+            sprintf(
+                '  <fg=white;options=bold>Time:   </><fg=default>%ss</>',
+                $timeElapsed
+            ),
+            '',
+        ]
         );
     }
 }
