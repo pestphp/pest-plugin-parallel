@@ -51,6 +51,9 @@ final class Runner extends BaseRunner
         $this->timer = new Timer();
     }
 
+    /**
+     * @return array<int, ExecutablePestTest>
+     */
     protected function getPestTests(): array
     {
         $occurrences = array_count_values($this->testSuite->tests->getFilenames());
