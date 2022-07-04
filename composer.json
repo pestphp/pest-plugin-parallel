@@ -18,7 +18,6 @@
         "pestphp/pest-plugin": "^1.0"
     },
     "require-dev": {
-        "laravel/pint": "^0.2.2",
         "pestphp/pest": "1.x-dev",
         "pestphp/pest-dev-tools": "dev-master"
     },
