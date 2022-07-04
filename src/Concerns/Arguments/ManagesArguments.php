@@ -48,4 +48,11 @@ trait ManagesArguments
 
         return $this;
     }
+
+    private function hasArgument(string $argument): bool
+    {
+        return count(array_filter($this->arguments, function ($value) use ($argument): bool {
+            return strpos($value, $argument) === 0;
+        })) > 0;
+    }
 }
