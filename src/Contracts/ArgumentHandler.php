@@ -10,8 +10,7 @@ namespace Pest\Parallel\Contracts;
 interface ArgumentHandler
 {
     /**
-     * @param array<int, string> $arguments
-     *
+     * @param  array<int, string>  $arguments
      * @return array<int, string>
      */
     public function handle(array $arguments): array;

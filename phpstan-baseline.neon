@@ -1,0 +1,21 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Access to private property ParaTest\\\\Runners\\\\PHPUnit\\\\Worker\\\\RunnerWorker\\:\\:\\$process\\.$#"
+			count: 1
+			path: src/Paratest/PestRunnerWorker.php
+
+		-
+			message: "#^Class ParaTest\\\\Runners\\\\PHPUnit\\\\Worker\\\\RunnerWorker constructor invoked with 4 parameters, 3 required\\.$#"
+			count: 1
+			path: src/Paratest/PestRunnerWorker.php
+
+		-
+			message: "#^Method Pest\\\\Parallel\\\\Paratest\\\\Runner\\:\\:complete\\(\\) is protected, but since the containing class is final, it can be private\\.$#"
+			count: 1
+			path: src/Paratest/Runner.php
+
+		-
+			message: "#^Method Pest\\\\Parallel\\\\Paratest\\\\Runner\\:\\:getPestTests\\(\\) is protected, but since the containing class is final, it can be private\\.$#"
+			count: 1
+			path: src/Paratest/Runner.php

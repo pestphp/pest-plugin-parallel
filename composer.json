@@ -18,8 +18,12 @@
         "pestphp/pest-plugin": "^1.0"
     },
     "require-dev": {
+        "ergebnis/phpstan-rules": "^1.0.0",
         "pestphp/pest": "1.x-dev",
-        "pestphp/pest-dev-tools": "dev-master"
+        "phpstan/phpstan": "^1.8",
+        "phpstan/phpstan-strict-rules": "^1.3",
+        "symfony/var-dumper": "^5.0 || ^6.0",
+        "thecodingmachine/phpstan-strict-rules": "^1.0"
     },
     "conflict": {
         "pestphp/pest": "<1.16",
@@ -60,8 +64,6 @@
         }
     },
     "scripts": {
-        "lint": "php-cs-fixer fix -v",
-        "test:lint": "php-cs-fixer fix -v --dry-run",
         "test:types": "phpstan analyse --ansi",
         "test:unit": "pest --colors=always",
         "test": [

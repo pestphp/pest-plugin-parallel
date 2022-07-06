@@ -21,7 +21,7 @@ final class Laravel implements ArgumentHandler
 
     private function editArguments(): void
     {
-        if (!Environment::isALaravelApplication()) {
+        if (! Environment::isALaravelApplication()) {
             return;
         }
 
@@ -34,7 +34,7 @@ final class Laravel implements ArgumentHandler
     private function setLaravelParallelRunner(): void
     {
         // @phpstan-ignore-next-line
-        if (!method_exists(ParallelRunner::class, 'resolveRunnerUsing')) {
+        if (! method_exists(ParallelRunner::class, 'resolveRunnerUsing')) {
             exit('Using parallel with Pest requires Laravel v8.55.0 or higher.');
         }
 

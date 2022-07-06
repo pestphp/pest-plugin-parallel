@@ -18,7 +18,10 @@ final class Parallel implements ArgumentHandler
     private function editArguments(): void
     {
         $this->unsetArgument('--parallel')
-            ->unsetArgument('-p')
-            ->setArgument('--runner', Runner::class);
+            ->unsetArgument('-p');
+
+        if (! $this->hasArgument('--runner')) {
+            $this->setArgument('--runner', Runner::class);
+        }
     }
 }
