@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [v1.2.0 (2022-07-06)](https://github.com/pestphp/pest-plugin-parallel/compare/v1.1.0...v1.2.0)
+
+### Added
+- Support for specifying a custom runner using the `--runner` flag ([#15](https://github.com/pestphp/pest-plugin-parallel/pull/15))
+
 ## [v1.1.0 (2022-05-06)](https://github.com/pestphp/pest-plugin-parallel/compare/v1.0.0...v1.1.0)
 
 ### Fixed
