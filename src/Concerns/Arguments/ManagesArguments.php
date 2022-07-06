@@ -49,6 +49,9 @@ trait ManagesArguments
         return $this;
     }
 
+    /**
+     * Check if the given argument is present in the arguments array.
+     */
     private function hasArgument(string $argument): bool
     {
         return count(array_filter($this->arguments, function ($value) use ($argument): bool {

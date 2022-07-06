@@ -108,10 +108,10 @@ trait InterpretsResults
     private function printRecap(OutputInterface $output, Duration $duration): void
     {
         $types = [
-            TestResult::FAIL    => $this->testsFailed(),
-            TestResult::WARN    => $this->testsWithWarnings(),
+            TestResult::FAIL => $this->testsFailed(),
+            TestResult::WARN => $this->testsWithWarnings(),
             TestResult::SKIPPED => $this->testsSkipped(),
-            TestResult::PASS    => $this->testsPassed(),
+            TestResult::PASS => $this->testsPassed(),
         ];
 
         $tests = [];
