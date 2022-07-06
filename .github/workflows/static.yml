@@ -23,7 +23,7 @@ jobs:
       run: composer update --no-interaction --no-progress
 
     - name: Run PHP-CS-Fixer
-      run: composer require laravel/pint && composer test:lint
+      run: composer require laravel/pint && vendor/bin/pint --test
 
   phpstan:
     runs-on: ubuntu-latest

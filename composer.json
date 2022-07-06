@@ -64,8 +64,6 @@
         }
     },
     "scripts": {
-        "lint": "vendor/bin/pint",
-        "test:lint": "vendor/bin/pint --test",
         "test:types": "phpstan analyse --ansi",
         "test:unit": "pest --colors=always",
         "test": [
