@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 use Pest\Parallel\Concerns\Arguments\ManagesArguments;
 
-$argumentManager = new class
-{
+$argumentManager = new class() {
     use ManagesArguments;
 
     protected function editArguments(): void

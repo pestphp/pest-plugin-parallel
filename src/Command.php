@@ -12,7 +12,7 @@ use Symfony\Component\Console\Input\ArgvInput;
 final class Command
 {
     /**
-     * @param  array<int, string>  $argv
+     * @param array<int, string> $argv
      */
     public function run(array $argv): int
     {

@@ -31,7 +31,7 @@ final class PestRunnerWorker
 
     public function __construct(OutputInterface $output, ExecutableTest $executableTest, Options $options, int $token)
     {
-        $this->output = $output;
+        $this->output         = $output;
         $this->paratestRunner = new RunnerWorker(
             $executableTest,
             $options,
@@ -60,7 +60,8 @@ final class PestRunnerWorker
     }
 
     /**
-     * @param  array<int, mixed>  $arguments
+     * @param array<int, mixed> $arguments
+     *
      * @return mixed
      */
     public function __call(string $name, array $arguments)
@@ -70,15 +71,16 @@ final class PestRunnerWorker
     }
 
     /**
-     * @param  array<int, string>  $args
+     * @param array<int, string> $args
+     *
      * @return array<int, string>
      */
     private static function editArgs(array $args, Options $options): array
     {
-        $phpUnitIndex = array_search($options->phpunit(), $args, true);
+        $phpUnitIndex        = array_search($options->phpunit(), $args, true);
         $args[$phpUnitIndex] = static::getPestBinary($options);
 
-        $printerIndex = array_search(NullPhpunitPrinter::class, $args, true);
+        $printerIndex        = array_search(NullPhpunitPrinter::class, $args, true);
         $args[$printerIndex] = Printer::class;
 
         return $args;

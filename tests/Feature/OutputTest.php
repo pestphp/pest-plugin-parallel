@@ -3,7 +3,13 @@
 declare(strict_types=1);
 
 beforeEach(function () {
-    $this->output = runInternalTests(['--processes=8'])->getOutput();
+    $this->output = preg_replace([
+        '#\\x1b[[][^A-Za-z]*[A-Za-z]#',
+        '/(Tests\\\PHPUnit\\\CustomAffixes\\\InvalidTestName)([A-Za-z0-9]*)/',
+    ], [
+        '',
+        '$1',
+    ], runInternalTests(['--processes=8', '--colors=never'])->getOutput());
 });
 
 it('includes the test case names', function () {

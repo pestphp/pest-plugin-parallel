@@ -48,7 +48,7 @@ final class Runner extends BaseRunner
         parent::__construct($options, $output);
 
         $this->testSuite = TestSuite::getInstance();
-        $this->timer = new Timer();
+        $this->timer     = new Timer();
     }
 
     /**
@@ -92,7 +92,7 @@ final class Runner extends BaseRunner
             $availableTokens = [];
 
             $completedTests = array_filter($this->running, function (PestRunnerWorker $test): bool {
-                return ! $test->isRunning();
+                return !$test->isRunning();
             });
 
             foreach ($completedTests as $token => $test) {
@@ -104,7 +104,7 @@ final class Runner extends BaseRunner
     }
 
     /**
-     * @param  array<int, int>  $availableTokens
+     * @param array<int, int> $availableTokens
      */
     private function fillRunQueue(array $availableTokens): void
     {

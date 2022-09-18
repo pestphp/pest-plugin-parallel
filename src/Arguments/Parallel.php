@@ -20,7 +20,7 @@ final class Parallel implements ArgumentHandler
         $this->unsetArgument('--parallel')
             ->unsetArgument('-p');
 
-        if (! $this->hasArgument('--runner')) {
+        if (!$this->hasArgument('--runner')) {
             $this->setArgument('--runner', Runner::class);
         }
     }

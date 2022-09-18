@@ -31,7 +31,7 @@ final class Plugin implements HandlesArguments
 
     public function handleArguments(array $arguments): array
     {
-        if (! $this->userWantsParallel($arguments)) {
+        if (!$this->userWantsParallel($arguments)) {
             $this->markTestSuiteAsParallelIfRequired();
 
             return $arguments;
@@ -45,7 +45,7 @@ final class Plugin implements HandlesArguments
     }
 
     /**
-     * @param  array<int, string>  $arguments
+     * @param array<int, string> $arguments
      */
     private function userWantsParallel(array $arguments): bool
     {
