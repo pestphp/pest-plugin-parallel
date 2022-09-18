@@ -13,18 +13,18 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^7.3 || ^8.0",
+        "php": "^8.1",
         "brianium/paratest": "^6.6.4",
-        "pestphp/pest-plugin": "^1.1.0"
+        "pestphp/pest-plugin": "^2.0.0"
     },
     "require-dev": {
-        "pestphp/pest": "^1.22.1",
-        "pestphp/pest-dev-tools": "^1.0.0"
+        "pestphp/pest": "^2.0.0",
+        "pestphp/pest-dev-tools": "^2.0.0"
     },
     "conflict": {
-        "pestphp/pest": "<1.16",
-        "nunomaduro/collision": "<5.8",
-        "laravel/framework": "<8.55"
+        "pestphp/pest": "<2.0.0",
+        "nunomaduro/collision": "<7.0.0",
+        "laravel/framework": "<9.30.1"
     },
     "autoload": {
         "psr-4": {
@@ -57,8 +57,8 @@
         }
     },
     "scripts": {
-        "lint": "php-cs-fixer fix -v",
-        "test:lint": "php-cs-fixer fix -v --dry-run",
+        "lint": "pint",
+        "test:lint": "pint --test",
         "test:types": "phpstan analyse --ansi",
         "test:unit": "pest --colors=always",
         "test": [
