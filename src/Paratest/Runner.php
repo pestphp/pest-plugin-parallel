@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pest\Parallel\Paratest;
 
+use ParaTest\Logging\JUnit\Reader;
 use ParaTest\Runners\PHPUnit\BaseRunner;
 use ParaTest\Runners\PHPUnit\EmptyLogFileException;
 use ParaTest\Runners\PHPUnit\Options;
@@ -47,8 +48,8 @@ final class Runner extends BaseRunner
     {
         parent::__construct($options, $output);
 
-        $this->testSuite = TestSuite::getInstance();
-        $this->timer     = new Timer();
+        $this->testSuite   = TestSuite::getInstance();
+        $this->timer       = new Timer();
     }
 
     /**
@@ -79,50 +80,115 @@ final class Runner extends BaseRunner
             $this->options->processes() > 1 ? 'es' : '',
         )]);
 
-        $this->createWorkers();
+        $this->startWorkers();
+        $this->assignAllPendingTests();
+        $this->waitForAllToFinish();
     }
 
-    private function createWorkers(): void
+    private function startWorkers(): void
     {
-        $availableTokens = range(1, $this->options->processes());
-        while (count($this->running) > 0 || count($this->pending) > 0) {
-            $this->fillRunQueue($availableTokens);
-            usleep(static::CYCLE_SLEEP);
-
-            $availableTokens = [];
-
-            $completedTests = array_filter($this->running, function (PestRunnerWorker $test): bool {
-                return !$test->isRunning();
-            });
-
-            foreach ($completedTests as $token => $test) {
-                $this->tearDown($test);
-                unset($this->running[$token]);
-                $availableTokens[] = $token;
-            }
+        for ($token = 1; $token <= $this->options->processes(); $token++) {
+            $this->running[$token] = new PestRunnerWorker($this->output, $this->options, $token);
+            $this->running[$token]->start();
         }
     }
 
-    /**
-     * @param array<int, int> $availableTokens
-     */
-    private function fillRunQueue(array $availableTokens): void
+    private function assignAllPendingTests(): void
     {
-        while (
-            count($this->pending) > 0
-            && count($this->running) < $this->options->processes()
-            && ($token = array_shift($availableTokens)) !== null
-        ) {
-            $executableTest = array_shift($this->pending);
+        $phpunit        = $this->options->phpunit();
+        $phpunitOptions = $this->options->filtered();
 
-            $this->running[$token] = new PestRunnerWorker($this->output, $executableTest, $this->options, $token);
-            $this->running[$token]->run();
+        while (count($this->pending) > 0 && count($this->running) > 0) {
+            foreach ($this->running as $worker) {
+                if (!$worker->isRunning()) {
+                    throw $worker->getWorkerCrashedException();
+                }
+
+                if (!$worker->isFree()) {
+                    continue;
+                }
+
+                $this->tearDown($worker);
+                if ($this->getExitCode() > 0 && $this->shouldStopOnFailure()) {
+                    $this->pending = [];
+                } elseif (($pending = array_shift($this->pending)) !== null) {
+                    $worker->assign($pending, $phpunit, $phpunitOptions, $this->options);
+                }
+            }
+
+            usleep(self::CYCLE_SLEEP);
+        }
+    }
+
+    private function waitForAllToFinish(): void
+    {
+        $stopped = [];
+        while (count($this->running) > 0) {
+            foreach ($this->running as $index => $worker) {
+                if ($worker->isRunning()) {
+                    if (!array_key_exists($index, $stopped) && $worker->isFree()) {
+                        $worker->stop();
+                        $stopped[$index] = true;
+                    }
+
+                    continue;
+                }
+
+                if (!$worker->isFree()) {
+                    throw $worker->getWorkerCrashedException();
+                }
+
+                $this->tearDown($worker);
+                unset($this->running[$index]);
+            }
+
+            usleep(self::CYCLE_SLEEP);
+        }
+    }
+
+    private function addCoverageIfHas(PestRunnerWorker $worker): void
+    {
+        if ($this->hasCoverage() && $worker->hasCurrentlyExecuting()) {
+            $coverageMerger   = $this->getCoverage();
+            $coverageFileName = $worker->getCoverageFileName();
+
+            if ($coverageMerger === null) {
+                return;
+            }
+
+            $coverageMerger->addCoverageFromFile($coverageFileName);
         }
     }
 
     private function tearDown(PestRunnerWorker $worker): void
     {
-        $this->exitcode = max($this->getExitCode(), (int) $worker->stop());
+        if (!$worker->hasCurrentlyExecuting()) {
+            return;
+        }
+
+        $this->addCoverageIfHas($worker);
+
+        $exitCode = TestRunner::SUCCESS_EXIT;
+
+        try {
+            $this->addReaderForTest($worker->getExecutableTest());
+
+            $reader = new Reader($worker->getExecutableTest()->getTempFile());
+
+            if ($reader->getTotalErrors() > 0) {
+                $exitCode = TestRunner::EXCEPTION_EXIT;
+            } elseif ($reader->getTotalFailures() > 0 || $reader->getTotalWarnings() > 0) {
+                $exitCode = TestRunner::FAILURE_EXIT;
+            }
+        } catch (EmptyLogFileException $emptyLogFileException) {
+            throw $worker->getWorkerCrashedException($emptyLogFileException);
+        }
+
+        $worker->printOutput();
+
+        $worker->reset();
+
+        $this->exitcode = max($this->getExitCode(), $exitCode);
 
         if ($this->shouldStopOnFailure() && $this->getExitCode() > TestRunner::SUCCESS_EXIT) {
             $this->pending = [];
@@ -135,20 +201,6 @@ final class Runner extends BaseRunner
         ) {
             throw $worker->getWorkerCrashedException();
         }
-
-        try {
-            $this->addReaderForTest($worker->getExecutableTest());
-        } catch (EmptyLogFileException $emptyLogFileException) {
-            throw $worker->getWorkerCrashedException($emptyLogFileException);
-        }
-
-        $coverageMerger = $this->getCoverage();
-
-        if ($coverageMerger === null) {
-            return;
-        }
-
-        $coverageMerger->addCoverageFromFile($worker->getExecutableTest()->getCoverageFileName());
     }
 
     private function shouldStopOnFailure(): bool
