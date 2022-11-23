@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Pest\Parallel\Support;
 
 use Symfony\Component\Console\Output\OutputInterface;
-use Throwable;
 
 /**
  * @internal
@@ -42,7 +41,7 @@ final class OutputHandler
 
         try {
             $this->standardOutput($content);
-        } catch (Throwable $exception) { // @phpstan-ignore-line
+        } catch (\Throwable $exception) { // @phpstan-ignore-line
             $this->output->write($content);
         }
     }

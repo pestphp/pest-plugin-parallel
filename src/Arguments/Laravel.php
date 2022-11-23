@@ -38,7 +38,6 @@ final class Laravel implements ArgumentHandler
             exit('Using parallel with Pest requires Laravel v8.55.0 or higher.');
         }
 
-        // @phpstan-ignore-next-line
         ParallelRunner::resolveRunnerUsing(function (Options $options, OutputInterface $output): Runner {
             return new Runner($options, $output);
         });
