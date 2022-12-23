@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Pest\Parallel\Support;
 
-use Composer\InstalledVersions;
 
 /**
  * @internal
@@ -13,6 +12,8 @@ final class Environment
 {
     public static function isALaravelApplication(): bool
     {
-        return InstalledVersions::isInstalled('laravel/framework') && ! InstalledVersions::isInstalled('orchestra/testbench');
+        return class_exists(\Illuminate\Foundation\Application::class)
+            && class_exists(\Illuminate\Testing\ParallelRunner::class)
+            && !class_exists(\Orchestra\Testbench\TestCase::class);
     }
 }
