@@ -14,11 +14,11 @@
     "license": "MIT",
     "require": {
         "php": "^7.3 || ^8.0",
-        "brianium/paratest": "^6.6.4",
+        "brianium/paratest": "^6.8.1",
         "pestphp/pest-plugin": "^1.1.0"
     },
     "require-dev": {
-        "pestphp/pest": "^1.22.1",
+        "pestphp/pest": "^1.22.3",
         "pestphp/pest-dev-tools": "^1.0.0"
     },
     "conflict": {
