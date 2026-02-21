@@ -1,36 +1,39 @@
 name: Tests
 
-on: ['push', 'pull_request']
+on:
+  - push
+  - pull_request
 
 jobs:
   ci:
     runs-on: ${{ matrix.os }}
+
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        php: ['7.3', '7.4', '8.0', '8.1']
+        php: ['7.3', '7.4', '8.0', '8.1', '8.3', '8.4', '8.5']
         dependency-version: [prefer-lowest]
 
     name: PHP ${{ matrix.php }} - ${{ matrix.os }} - ${{ matrix.dependency-version }}
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php }}
-        tools: composer:v2
-        coverage: none
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+          coverage: none
 
-    - name: Setup Problem Matches
-      run: |
-        echo "::add-matcher::${{ runner.tool_cache }}/php.json"
-        echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+      - name: Setup Problem Matches
+        run: |
+          echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+          echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
-    - name: Install dependencies
-      run: composer update --${{ matrix.dependency-version }} --no-interaction --no-progress
+      - name: Install dependencies
+        run: composer update --${{ matrix.dependency-version }} --no-interaction --no-progress
 
-    - name: Unit Tests
-      run: php vendor/bin/pest --colors=always
+      - name: Unit Tests
+        run: php vendor/bin/pest --colors=always
